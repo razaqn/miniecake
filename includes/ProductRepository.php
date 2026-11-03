@@ -445,7 +445,7 @@ class ProductRepository {
             }));
         }
 
-        file_put_contents($this->jsonFilePath, json_encode($products, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        @file_put_contents($this->jsonFilePath, json_encode($products, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 
     /**

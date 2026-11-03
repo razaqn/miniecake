@@ -7,6 +7,9 @@
 require_once __DIR__ . '/../config/app.php';
 
 class GoogleClient {
+    private static $inMemoryToken = null;
+    private static $inMemoryExpiresAt = 0;
+
     private $clientId;
     private $clientSecret;
     private $refreshToken;
@@ -25,7 +28,17 @@ class GoogleClient {
         $this->spreadsheetId = env('GOOGLE_SPREADSHEET_ID');
         $this->sheetName = env('GOOGLE_SPREADSHEET_SHEET_NAME', 'Products');
         $this->driveFolderId = env('GOOGLE_DRIVE_FOLDER_ID');
-        $this->tokenCacheFile = __DIR__ . '/../data/google_token_cache.json';
+
+        // On serverless environments (like Vercel), the project directory is read-only.
+        // Fallback to sys_get_temp_dir() (/tmp) when data/ directory is not writable.
+        $dataDir = __DIR__ . '/../data';
+        if (is_dir($dataDir) && is_writable($dataDir)) {
+            $this->tokenCacheFile = $dataDir . '/google_token_cache.json';
+        } else {
+            $tempDir = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR);
+            $cacheKey = md5(($this->clientId ?? '') . ($this->refreshToken ?? 'miniecake'));
+            $this->tokenCacheFile = $tempDir . '/google_token_cache_' . $cacheKey . '.json';
+        }
     }
 
     /**
@@ -49,17 +62,27 @@ class GoogleClient {
      * Get valid Access Token (either direct token or refreshed via refresh_token)
      */
     public function getAccessToken() {
-        // Check cached token
-        if (file_exists($this->tokenCacheFile)) {
-            $cache = json_decode(file_get_contents($this->tokenCacheFile), true);
-            if (!empty($cache['access_token']) && !empty($cache['expires_at'])) {
-                if ($cache['expires_at'] > time() + 60) {
-                    return $cache['access_token'];
+        // 1. Check in-memory static cache first
+        if (self::$inMemoryToken !== null && self::$inMemoryExpiresAt > time() + 60) {
+            return self::$inMemoryToken;
+        }
+
+        // 2. Check cached token on filesystem (/tmp or data/)
+        if ($this->tokenCacheFile && @file_exists($this->tokenCacheFile)) {
+            $content = @file_get_contents($this->tokenCacheFile);
+            if ($content) {
+                $cache = json_decode($content, true);
+                if (!empty($cache['access_token']) && !empty($cache['expires_at'])) {
+                    if ($cache['expires_at'] > time() + 60) {
+                        self::$inMemoryToken = $cache['access_token'];
+                        self::$inMemoryExpiresAt = (int)$cache['expires_at'];
+                        return $cache['access_token'];
+                    }
                 }
             }
         }
 
-        // If we have refresh token + client creds, refresh it
+        // 3. If we have refresh token + client creds, refresh it
         if (!empty($this->refreshToken) && !empty($this->clientId) && !empty($this->clientSecret)) {
             $newToken = $this->refreshOAuthToken();
             if ($newToken) {
@@ -67,7 +90,7 @@ class GoogleClient {
             }
         }
 
-        // Fallback to direct access token if provided
+        // 4. Fallback to direct access token if provided
         return !empty($this->directAccessToken) ? $this->directAccessToken : null;
     }
 
@@ -97,11 +120,18 @@ class GoogleClient {
             $data = json_decode($response, true);
             if (!empty($data['access_token'])) {
                 $expiresIn = $data['expires_in'] ?? 3500;
+                $expiresAt = time() + $expiresIn;
+
+                self::$inMemoryToken = $data['access_token'];
+                self::$inMemoryExpiresAt = $expiresAt;
+
                 $cacheData = [
                     'access_token' => $data['access_token'],
-                    'expires_at' => time() + $expiresIn
+                    'expires_at' => $expiresAt
                 ];
-                file_put_contents($this->tokenCacheFile, json_encode($cacheData));
+                if ($this->tokenCacheFile) {
+                    @file_put_contents($this->tokenCacheFile, json_encode($cacheData));
+                }
                 return $data['access_token'];
             }
         }
