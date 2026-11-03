@@ -3,12 +3,6 @@
   "functions": {
     "api/*.php": {
       "runtime": "vercel-php@0.7.3"
-    },
-    "admin/*.php": {
-      "runtime": "vercel-php@0.7.3"
-    },
-    "*.php": {
-      "runtime": "vercel-php@0.7.3"
     }
   },
   "routes": [
@@ -30,31 +24,27 @@
     },
     {
       "src": "/admin/login",
-      "dest": "/admin/login.php"
+      "dest": "/api/index.php"
     },
     {
       "src": "/admin/logout",
-      "dest": "/admin/logout.php"
+      "dest": "/api/index.php"
     },
     {
       "src": "/admin/?$",
-      "dest": "/admin/index.php"
-    },
-    {
-      "src": "/admin/(.*)\\.php",
-      "dest": "/admin/$1.php"
+      "dest": "/api/index.php"
     },
     {
       "src": "/admin/(.*)",
-      "dest": "/admin/$1.php"
+      "dest": "/api/index.php"
     },
     {
       "src": "/",
-      "dest": "/index.php"
+      "dest": "/api/index.php"
     },
     {
       "src": "/(.*)",
-      "dest": "/index.php"
+      "dest": "/api/index.php"
     }
   ]
 }
