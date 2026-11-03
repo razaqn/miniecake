@@ -1,0 +1,39 @@
+{
+    "app_name": "miniecake",
+    "app_tagline": "Sweet Moments in Every Bite",
+    "logo_url": "assets/images/logo.svg",
+    "whatsapp_number": "6281234567890",
+    "instagram_url": "https://instagram.com/miniecake",
+    "facebook_url": "https://facebook.com/miniecake",
+    "tiktok_url": "https://tiktok.com/@miniecake",
+    "address": "Jl. Melati No. 12, Jakarta Selatan",
+    "opening_hours": "Setiap Hari 08:00 - 20:00 WIB",
+    "categories": [
+        "Bento Cake",
+        "Whole Cake",
+        "Cupcakes",
+        "Dessert Box",
+        "Pastry",
+        "General"
+    ],
+    "banners": [
+        {
+            "id": "BAN-01",
+            "title": "Sweet Moments in Every Bite ✨",
+            "subtitle": "Koleksi Korean Bento Cake & kue estetik dibuat fresh setiap hari dengan bahan premium.",
+            "image": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1400&q=80",
+            "link": "#katalog",
+            "button_text": "Lihat Menu Kue",
+            "active": true
+        },
+        {
+            "id": "BAN-02",
+            "title": "Custom Cake Sesuai Impianmu 💕",
+            "subtitle": "Bebas custom tulisan, warna pastel, dan desain vintage untuk hari spesialmu. Pre-Order H-2.",
+            "image": "http://localhost:8000/api/image.php?id=1KxiQJYmS-I1qlKbHUxNLwFxsj6qY4Rsb",
+            "link": "#katalog",
+            "button_text": "Pesan Custom",
+            "active": true
+        }
+    ]
+}

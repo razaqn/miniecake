@@ -1,0 +1,98 @@
+[
+    {
+        "id": "PROD-BENTO-01",
+        "name": "Pink Blossom Korean Bento Cake",
+        "category": "Bento Cake",
+        "price": 85000,
+        "status": "Ready Stock",
+        "short_desc": "Bento cake diameter 10cm dengan dekorasi bunga pastel pink yang manis.",
+        "full_desc": "Korean Lunchbox Bento Cake berukuran diameter 10cm, cocok untuk mini celebration, ulang tahun, atau kado spesial. Terbuat dari sponge cake vanila yang lembut dengan selai stroberi premium dan balutan buttercream lembut yang tidak bikin eneg. Sudah termasuk lilin spiral dan sendok kayu ramah lingkungan.",
+        "images": [
+            "https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?auto=format&fit=crop&w=800&q=80"
+        ],
+        "video": "https://assets.mixkit.co/videos/preview/mixkit-decorating-a-cake-with-frosting-42171-large.mp4",
+        "created_at": "2026-11-01 10:00:00",
+        "updated_at": "2026-11-01 10:00:00"
+    },
+    {
+        "id": "PROD-VINTAGE-02",
+        "name": "Coquette Heart Vintage Cake",
+        "category": "Whole Cake",
+        "price": 245000,
+        "status": "Pre-Order H-2",
+        "short_desc": "Kue bentuk hati bergaya vintage coquette dengan piping renda pink dan cherry segar.",
+        "full_desc": "Kue ulang tahun bentuk hati (diameter 16cm) dengan desain retro vintage ala Korea. Didekorasi dengan piping renda detail warna soft pink, mutiara gula edible, dan buah cherry maraschino segar di atasnya. Base cake: Double Chocolate Fudge atau Red Velvet dengan cream cheese frosting lembut.",
+        "images": [
+            "https://images.unsplash.com/photo-1621303837174-89787a7d4729?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80"
+        ],
+        "video": "",
+        "created_at": "2026-11-01 11:30:00",
+        "updated_at": "2026-11-01 11:30:00"
+    },
+    {
+        "id": "PROD-CUPCAKE-03",
+        "name": "Pastel Pink Rose Cupcake Set (Isi 6)",
+        "category": "Cupcakes",
+        "price": 120000,
+        "status": "Ready Stock",
+        "short_desc": "Satu set berisi 6 cupcake dengan piping bunga mawar gradasi warna pink.",
+        "full_desc": "Satu box eksklusif berisi 6 cupcake cantik dengan piping cream berbentuk bunga mawar gradasi pink dan putih. Menggunakan butter Anchor murni yang harum dan tidak berminyak. Varian rasa mix: 3 Madagascan Vanilla & 3 Belgian Chocolate. Cocok untuk bingkisan hampers atau perayaan anniversary.",
+        "images": [
+            "https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1587668178277-295251f900ce?auto=format&fit=crop&w=800&q=80"
+        ],
+        "video": "",
+        "created_at": "2026-11-01 12:00:00",
+        "updated_at": "2026-11-01 12:00:00"
+    },
+    {
+        "id": "PROD-DESSERT-04",
+        "name": "Strawberry Milk Dessert Box",
+        "category": "Dessert Box",
+        "price": 65000,
+        "status": "Ready Stock",
+        "short_desc": "Lapisan sponge cake lembut, strawberry puree segar, dan diplomat cream.",
+        "full_desc": "Dessert box favorit ukuran 10x10cm dengan 4 lapisan kenikmatan: Japanese vanilla sponge cake, potongan buah strawberry segar lokal berselimut coulis homemade, diplomat cream susu yang lumer di mulut, dan topping biskuit crumble renyah. Disajikan dingin lebih segar!",
+        "images": [
+            "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80"
+        ],
+        "video": "https://assets.mixkit.co/videos/preview/mixkit-pouring-milk-over-a-slice-of-strawberry-cake-43343-large.mp4",
+        "created_at": "2026-11-02 09:15:00",
+        "updated_at": "2026-11-02 09:15:00"
+    },
+    {
+        "id": "PROD-CHIFFON-05",
+        "name": "Cloud Strawberry Chiffon Cake",
+        "category": "Whole Cake",
+        "price": 175000,
+        "status": "Pre-Order H-1",
+        "short_desc": "Chiffon cake super lembut dan membal dengan aroma susu stroberi alami.",
+        "full_desc": "Chiffon cake berdiameter 18cm yang sering disebut 'kue awan' karena teksturnya yang sangat ringan, lembut, dan membal saat disentuh. Diracik dari ekstrak sari stroberi murni tanpa pengawet atau pemanis buatan. Dibalut lelehan white chocolate strawberry drip dan taburan freeze-dried strawberry.",
+        "images": [
+            "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&w=800&q=80"
+        ],
+        "video": "",
+        "created_at": "2026-11-02 14:00:00",
+        "updated_at": "2026-11-02 14:00:00"
+    },
+    {
+        "id": "PROD-PASTRY-06",
+        "name": "Raspberry Rose Macarons Box",
+        "category": "Pastry",
+        "price": 95000,
+        "status": "Ready Stock",
+        "short_desc": "Box isi 8 macaron renyah di luar, lembut di dalam dengan filling rose ganache.",
+        "full_desc": "French macaron autentik dengan warna pink pastel dan motif marmer gold. Dibuat dari 100% almond flour murni California. Isian filling memadukan white chocolate raspberry ganache dan sentuhan aroma kelopak bunga mawar alami yang wangi dan elegan. Box mika premium dengan pita satin.",
+        "images": [
+            "https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1570476922354-81227cdbb76c?auto=format&fit=crop&w=800&q=80"
+        ],
+        "video": "",
+        "created_at": "2026-11-02 15:30:00",
+        "updated_at": "2026-11-02 15:30:00"
+    }
+]

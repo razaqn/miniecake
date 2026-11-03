@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 70" width="240" height="70">
+  <defs>
+    <linearGradient id="pinkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F472B6" />
+      <stop offset="100%" stop-color="#DB2777" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#ec4899" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Cake Icon Group -->
+  <g transform="translate(10, 8)" filter="url(#shadow)">
+    <!-- Plate -->
+    <ellipse cx="26" cy="46" rx="24" ry="4" fill="#FCE7F3" />
+    
+    <!-- Bottom Tier -->
+    <rect x="7" y="30" width="38" height="15" rx="4" fill="#FFFFFF" stroke="#F472B6" stroke-width="2"/>
+    <!-- Frosting drip on bottom tier -->
+    <path d="M7 30 Q11 35 15 30 Q20 36 26 30 Q32 35 38 30 Q42 34 45 30" fill="none" stroke="#DB2777" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Top Tier -->
+    <rect x="13" y="18" width="26" height="13" rx="3" fill="#FFFFFF" stroke="#F472B6" stroke-width="2"/>
+    <!-- Frosting drip on top tier -->
+    <path d="M13 18 Q18 22 23 18 Q28 22 33 18 Q36 21 39 18" fill="none" stroke="#DB2777" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- Candle -->
+    <line x1="26" y1="18" x2="26" y2="10" stroke="#F472B6" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Flame / Sparkle -->
+    <path d="M26 6 C28 9, 29 10, 26 12 C23 10, 24 9, 26 6 Z" fill="#FBBF24" />
+
+    <!-- Cherry / Sparkle dots -->
+    <circle cx="20" cy="18" r="2.5" fill="url(#pinkGrad)"/>
+    <circle cx="32" cy="18" r="2.5" fill="url(#pinkGrad)"/>
+    <circle cx="26" cy="4" r="1" fill="#F59E0B" />
+  </g>
+
+  <!-- Typography Brand -->
+  <g transform="translate(68, 42)">
+    <text font-family="'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" font-size="28" font-weight="800" letter-spacing="-0.5" fill="#1F2937">
+      minie<tspan fill="url(#pinkGrad)">cake</tspan>
+    </text>
+  </g>
+
+  <g transform="translate(70, 56)">
+    <text font-family="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="600" letter-spacing="1.5" fill="#BE185D" opacity="0.85">
+      PATISSERIE &amp; DESSERTS
+    </text>
+  </g>
+</svg>
+

@@ -1,0 +1,15 @@
+# Environment variables
+.env
+
+# Token caches & temporary uploads
+data/google_token_cache.json
+uploads/*
+!uploads/.gitkeep
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Vercel CLI cache
+.vercel
+

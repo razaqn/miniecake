@@ -1,0 +1,90 @@
+# ==============================================================================
+# MINIENCAKE - APACHE CONFIGURATION (.htaccess)
+# Clean URLs (removes .php extension), Security Hardening & Asset Caching
+# ==============================================================================
+
+# Disable directory browsing
+Options -Indexes +FollowSymLinks
+
+# Set default character encoding
+AddDefaultCharset UTF-8
+
+# ------------------------------------------------------------------------------
+# 1. SECURITY: Block sensitive files from direct web access
+# ------------------------------------------------------------------------------
+<FilesMatch "(^\.env|^\.git|composer\.|package\.json|\.json$|\.log$|\.md$)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ------------------------------------------------------------------------------
+# 2. URL REWRITE ENGINE (CLEAN EXTENSIONLESS URLs)
+# ------------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Prevent direct HTTP access to internal code directories
+    RewriteRule ^(includes|config)/ - [F,L,NC]
+
+    # Rule A: External 301 Redirect for /index.php to clean root /
+    RewriteCond %{THE_REQUEST} \s/+(.*?/)?index\.php[?\s] [NC]
+    RewriteRule ^(.*?)index\.php$ %1 [R=301,L,NE]
+
+    # Rule B: External 301 Redirect for any direct .php request (e.g. /admin/login.php -> /admin/login)
+    RewriteCond %{THE_REQUEST} \s/+(.*?/)?([^\s?]+)\.php[?\s] [NC]
+    RewriteRule ^(.+?)\.php$ $1 [R=301,L,NE]
+
+    # Rule C: Ensure trailing slash for real directories (e.g. /admin -> /admin/)
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^(.*[^/])$ $1/ [R=301,L]
+
+    # Rule D: Internal rewrite for clean URLs without .php extension
+    # If request is /admin/login and /admin/login.php exists, rewrite internally to login.php
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.+?)/?$ $1.php [L,QSA]
+
+    # Rule E: Fallback for subdirectories containing index.php (e.g. /admin/ -> /admin/index.php)
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteCond %{REQUEST_FILENAME}/index.php -f
+    RewriteRule ^(.*)$ $1/index.php [L,QSA]
+
+    # Rule F: Front controller fallback to root index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}.php !-f
+    RewriteRule ^ index.php [L,QSA]
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# 3. PERFORMANCE: Caching for static assets (Images, CSS, JS, Fonts)
+# ------------------------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType video/mp4 "access plus 1 year"
+    ExpiresByType video/webm "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# 4. GZIP COMPRESSION
+# ------------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json image/svg+xml
+</IfModule>
+
