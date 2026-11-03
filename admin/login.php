@@ -80,11 +80,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
         <button type="submit" class="btn-login-submit">Masuk ke Dashboard</button>
       </form>
-
-      <div style="margin-top: 24px; font-size: 0.8rem; color: #9ca3af;">
-        <p>Default Login: <code>admin</code> / <code>password123</code></p>
-        <p style="margin-top: 4px;"><a href="../" style="color: #ec4899; font-weight: 600;">&larr; Kembali ke Katalog Utama</a></p>
-      </div>
     </div>
   </div>
 </body>
