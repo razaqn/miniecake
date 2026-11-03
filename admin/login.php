@@ -7,7 +7,7 @@ require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../includes/Auth.php';
 
 if (Auth::check()) {
-    header('Location: ./');
+    header('Location: ' . base_url('admin'));
     exit;
 }
 
@@ -18,7 +18,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $password = trim($_POST['password'] ?? '');
 
     if (Auth::login($username, $password)) {
-        header('Location: ./');
+        header('Location: ' . base_url('admin'));
         exit;
     } else {
         $error = 'Username atau password yang Anda masukkan salah.';

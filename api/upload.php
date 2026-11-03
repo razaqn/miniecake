@@ -123,12 +123,12 @@ $safeName = $prefix . time() . '_' . substr(md5(uniqid()), 0, 8) . '.' . $ext;
 $targetDir = __DIR__ . '/../uploads/';
 
 if (!is_dir($targetDir)) {
-    mkdir($targetDir, 0755, true);
+    @mkdir($targetDir, 0755, true);
 }
 
 $targetPath = $targetDir . $safeName;
 
-if (move_uploaded_file($tmpPath, $targetPath)) {
+if (@move_uploaded_file($tmpPath, $targetPath)) {
     $fileUrl = base_url('uploads/' . $safeName);
     echo json_encode([
         'success' => true,
@@ -142,8 +142,12 @@ if (move_uploaded_file($tmpPath, $targetPath)) {
     ]);
 } else {
     http_response_code(500);
+    $errorMsg = 'Gagal memindahkan file yang diunggah ke folder server.';
+    if (!$googleClient->isDriveConfigured()) {
+        $errorMsg = 'Penyimpanan lokal tidak tersedia di lingkungan serverless Vercel (read-only filesystem). Pastikan kredensial Google Drive sudah diatur di Environment Variables untuk upload foto/video.';
+    }
     echo json_encode([
         'success' => false,
-        'message' => 'Gagal memindahkan file yang diunggah ke folder server.'
+        'message' => $errorMsg
     ]);
 }

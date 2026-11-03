@@ -604,6 +604,8 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
     window.INITIAL_CATEGORIES = <?= json_encode($categories, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
     window.INITIAL_BANNERS = <?= json_encode($banners, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
     window.INITIAL_SETTINGS = <?= json_encode($settings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+    window.ADMIN_TOKEN = <?= json_encode(Auth::getToken()) ?>;
+    window.BASE_URL = <?= json_encode(base_url()) ?>;
   </script>
   <script src="../assets/js/admin.js"></script>
 </body>

@@ -34,18 +34,25 @@ function e($text) {
  * Get Base URL dynamically
  */
 function base_url($path = '') {
+    // 1. If accessed via HTTP with HTTP_HOST, ALWAYS use the active request host
+    // to prevent accidental redirects to localhost on live Vercel deployments
+    if (!empty($_SERVER['HTTP_HOST'])) {
+        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+            || (!empty($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+        $protocol = $isHttps ? "https://" : "http://";
+        $host = $_SERVER['HTTP_HOST'];
+        return rtrim($protocol . $host, '/') . '/' . ltrim($path, '/');
+    }
+
+    // 2. Fallback to configured APP_URL (e.g. for CLI scripts or background jobs)
     $configured = env('APP_URL');
     if ($configured) {
         return rtrim($configured, '/') . '/' . ltrim($path, '/');
     }
 
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
-    $base = rtrim($protocol . $host . $scriptDir, '/');
-    
-    // Normalize path
-    return rtrim($base, '/') . '/' . ltrim($path, '/');
+    // 3. Root path fallback
+    return '/' . ltrim($path, '/');
 }
 
 /**

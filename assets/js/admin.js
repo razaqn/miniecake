@@ -14,6 +14,22 @@ document.addEventListener('DOMContentLoaded', () => {
   let editingProductId = null;
   let editingBannerId = null;
 
+  // Helper for authenticated API fetch (passes Authorization header + credentials)
+  async function authFetch(url, options = {}) {
+    const opts = { ...options };
+    opts.credentials = opts.credentials || 'same-origin';
+    const headers = new Headers(opts.headers || {});
+    if (window.ADMIN_TOKEN && !headers.has('Authorization')) {
+      headers.set('Authorization', 'Bearer ' + window.ADMIN_TOKEN);
+    }
+    opts.headers = headers;
+    const response = await window.fetch(url, opts);
+    if (response.status === 401) {
+      showToast('Sesi login telah berakhir. Silakan login kembali.', 'error');
+    }
+    return response;
+  }
+
   // DOM Elements - Tabs
   const tabButtons = document.querySelectorAll('.admin-tab-btn');
   const tabContents = document.querySelectorAll('.admin-tab-content');
@@ -433,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Mengunggah foto...', 'success');
 
       try {
-        const response = await fetch('../api/upload.php', { method: 'POST', body: formData });
+        const response = await authFetch('../api/upload.php', { method: 'POST', body: formData });
         const res = await response.json();
         if (res.success && res.data?.url) {
           formImages.push(res.data.url);
@@ -474,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Mengunggah video produk...', 'success');
 
       try {
-        const response = await fetch('../api/upload.php', { method: 'POST', body: formData });
+        const response = await authFetch('../api/upload.php', { method: 'POST', body: formData });
         const res = await response.json();
         if (res.success && res.data?.url) {
           formVideoUrl.value = res.data.url;
@@ -531,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSaveProduct.textContent = 'Menyimpan...';
 
       try {
-        const response = await fetch('../api/products.php', {
+        const response = await authFetch('../api/products.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -576,7 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch('../api/products.php', {
+      const response = await authFetch('../api/products.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ _action: 'delete', id: productId })
@@ -631,7 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!newName || newName.trim() === '' || newName.trim() === oldName) return;
 
         try {
-          const response = await fetch('../api/settings.php', {
+          const response = await authFetch('../api/settings.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ _action: 'update_category', old_name: oldName, new_name: newName.trim() })
@@ -664,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirmDel) return;
 
         try {
-          const response = await fetch('../api/settings.php', {
+          const response = await authFetch('../api/settings.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ _action: 'delete_category', name: name })
@@ -693,7 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!name) return;
 
       try {
-        const response = await fetch('../api/settings.php', {
+        const response = await authFetch('../api/settings.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ _action: 'add_category', name: name })
@@ -776,7 +792,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('Apakah Anda yakin ingin menghapus banner ini?')) return;
 
         try {
-          const response = await fetch('../api/settings.php', {
+          const response = await authFetch('../api/settings.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ _action: 'delete_banner', id: id })
@@ -852,7 +868,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Mengunggah gambar banner...', 'success');
 
       try {
-        const response = await fetch('../api/upload.php', { method: 'POST', body: formData });
+        const response = await authFetch('../api/upload.php', { method: 'POST', body: formData });
         const res = await response.json();
         if (res.success && res.data?.url) {
           formBannerImage.value = res.data.url;
@@ -899,7 +915,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       try {
-        const response = await fetch('../api/settings.php', {
+        const response = await authFetch('../api/settings.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -935,7 +951,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Mengunggah logo...', 'success');
 
       try {
-        const response = await fetch('../api/upload.php', { method: 'POST', body: formData });
+        const response = await authFetch('../api/upload.php', { method: 'POST', body: formData });
         const res = await response.json();
         if (res.success && res.data?.url) {
           formLogoUrl.value = res.data.url;
@@ -980,7 +996,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       try {
-        const response = await fetch('../api/settings.php', {
+        const response = await authFetch('../api/settings.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -1007,7 +1023,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSyncSheet.textContent = 'Sinkronisasi...';
 
       try {
-        const response = await fetch('../api/products.php', {
+        const response = await authFetch('../api/products.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ _action: 'sync_sheet' })
@@ -1034,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnTestConnection.addEventListener('click', async () => {
       btnTestConnection.textContent = 'Memeriksa...';
       try {
-        const response = await fetch('../api/check-connection.php');
+        const response = await authFetch('../api/check-connection.php');
         const res = await response.json();
         if (res.success) {
           const d = res.data;
