@@ -993,6 +993,48 @@ document.addEventListener('DOMContentLoaded', () => {
     startAutoSlide();
   }
 
+  // ==========================================
+  // DARK / LIGHT THEME ENGINE (DEVICE & MANUAL)
+  // ==========================================
+  const THEME_STORAGE_KEY = 'miniecake_theme';
+  const btnThemeToggle = document.getElementById('btnThemeToggle');
+
+  function getSystemTheme() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function applyTheme(theme, save = true) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    if (save) {
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, theme);
+      } catch (e) {}
+    }
+  }
+
+  // Initialize theme from storage or system device mode
+  const initialTheme = localStorage.getItem(THEME_STORAGE_KEY) || getSystemTheme();
+  applyTheme(initialTheme, false);
+
+  // Listen for device theme change (if not overridden by user)
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (!localStorage.getItem(THEME_STORAGE_KEY)) {
+        applyTheme(e.matches ? 'dark' : 'light', false);
+      }
+    });
+  }
+
+  if (btnThemeToggle) {
+    btnThemeToggle.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(newTheme, true);
+      showToast(newTheme === 'dark' ? 'Mode Gelap (Dark Mode) aktif 🌙' : 'Mode Terang (Light Mode) aktif ☀️');
+    });
+  }
+
   // Initial render & Badges
   updateFavoriteUI();
   updateCartBadge();

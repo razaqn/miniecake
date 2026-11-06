@@ -1811,3 +1811,305 @@ img, video {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
 }
+
+/* ==============================================================================
+   DARK MINIMALIST THEME (Slate Charcoal & Neon Pink)
+   Adapts to device settings (prefers-color-scheme: dark) or manual toggle
+   ============================================================================== */
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  --bg-pink: #0e1017;
+  --pure-white: #171a24;
+  --soft-pink: #261928;
+  --ultra-soft-pink: #1d1421;
+  --primary-pink: #f472b6;
+  --primary-hover: #ec4899;
+  --primary-dark: #fb7185;
+  --accent-pink: #f472b6;
+
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --text-light: #6b7280;
+
+  --border-soft: #33263a;
+  --border-ultra-soft: #231a29;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 20px 35px -10px rgba(0, 0, 0, 0.65);
+  --shadow-modal: 0 25px 60px -15px rgba(0, 0, 0, 0.85);
+}
+
+[data-theme="dark"] body {
+  background-color: var(--bg-pink);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .site-header {
+  background: rgba(14, 16, 23, 0.92);
+  border-bottom: 1px solid #281f2f;
+}
+
+[data-theme="dark"] .search-input-wrapper {
+  background: #171a24;
+  border-color: #382840;
+}
+
+[data-theme="dark"] .search-input {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .search-input::placeholder {
+  color: #6b7280;
+}
+
+[data-theme="dark"] .btn-fav-nav {
+  background: #201724;
+  border-color: #3d2843;
+  color: #f472b6;
+}
+
+[data-theme="dark"] .btn-cart-nav {
+  background: #201724;
+  border-color: #3d2843;
+  color: #f472b6;
+}
+
+[data-theme="dark"] .btn-theme-nav {
+  background: #201724;
+  border-color: #3d2843;
+  color: #f472b6;
+}
+
+[data-theme="dark"] .category-btn {
+  background: #171a24;
+  color: #d1d5db;
+  border: 1px solid #33263a;
+}
+
+[data-theme="dark"] .category-btn:hover {
+  background: #261928;
+  color: #f472b6;
+  border-color: #f472b6;
+}
+
+[data-theme="dark"] .category-btn.active {
+  background: #f472b6;
+  color: #0e1017;
+  font-weight: 800;
+  border-color: #f472b6;
+}
+
+[data-theme="dark"] .product-card {
+  background: #171a24;
+  border-color: #2e2235;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .product-card:hover {
+  border-color: #f472b6;
+  box-shadow: 0 10px 30px rgba(244, 114, 182, 0.2);
+}
+
+[data-theme="dark"] .card-carousel-wrapper {
+  background: #11131c;
+}
+
+[data-theme="dark"] .product-title {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .product-price-val {
+  color: #f472b6;
+}
+
+[data-theme="dark"] .badge-category {
+  background: rgba(23, 26, 36, 0.94);
+  color: #f472b6;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .card-fav-btn {
+  background: rgba(23, 26, 36, 0.88);
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .card-fav-btn.active {
+  background: #1f2330;
+  color: #ef4444;
+}
+
+[data-theme="dark"] .carousel-btn {
+  background: rgba(23, 26, 36, 0.85);
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .modal-card {
+  background: #171a24;
+  border: 1px solid #382840;
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .modal-product-title {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .modal-price-box {
+  background: #201724;
+  border-color: #382840;
+}
+
+[data-theme="dark"] .modal-price-value {
+  color: #f472b6;
+}
+
+[data-theme="dark"] .order-notes-box {
+  background: #1c1523;
+  border-color: #382840;
+  color: #d1d5db;
+}
+
+[data-theme="dark"] .btn-add-to-cart {
+  background: #201724;
+  border-color: #f472b6;
+  color: #f472b6;
+}
+
+[data-theme="dark"] .btn-add-to-cart:hover {
+  background: #2e1c33;
+}
+
+[data-theme="dark"] .cart-drawer {
+  background: #171a24;
+  color: #f3f4f6;
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .cart-drawer-header {
+  background: #201724;
+  border-bottom: 1px solid #33263a;
+}
+
+[data-theme="dark"] .cart-drawer-title-wrap {
+  color: #f472b6;
+}
+
+[data-theme="dark"] .cart-total-badge {
+  background: #2e1c33;
+  color: #f472b6;
+}
+
+[data-theme="dark"] .btn-close-drawer {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .btn-close-drawer:hover {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .cart-toolbar {
+  background: #12141d;
+  border-bottom: 1px solid #281f2f;
+}
+
+[data-theme="dark"] .cart-checkbox-wrap {
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .cart-item-row {
+  background: #201724;
+  border-color: #33263a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .cart-item-thumb {
+  border-color: #382840;
+}
+
+[data-theme="dark"] .cart-item-name {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .cart-item-price {
+  color: #f472b6;
+}
+
+[data-theme="dark"] .cart-qty-box {
+  border-color: #382840;
+}
+
+[data-theme="dark"] .btn-qty {
+  background: #2a1c2d;
+  color: #f472b6;
+}
+
+[data-theme="dark"] .cart-qty-value {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .cart-drawer-footer {
+  background: #12141d;
+  border-top: 1px solid #281f2f;
+}
+
+[data-theme="dark"] .summary-label {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .summary-price {
+  color: #f472b6;
+}
+
+[data-theme="dark"] .site-footer {
+  background: #11131c;
+  border-top: 1px solid #281f2f;
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .footer-bottom {
+  background: #0c0d14;
+  border-top: 1px solid #1f1925;
+  color: #6b7280;
+}
+
+[data-theme="dark"] .footer-social-icon {
+  background: #171a24;
+  color: #f472b6;
+  border: 1px solid #2e2235;
+}
+
+/* Theme Toggle Button Behavior in Miniecake */
+.btn-theme-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #fdf2f8;
+  color: #db2777;
+  border: 1px solid #fbcfe8;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-theme-nav:hover {
+  background: #fce7f3;
+  border-color: #f472b6;
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .btn-theme-nav .icon-sun {
+  display: block !important;
+}
+[data-theme="dark"] .btn-theme-nav .icon-moon {
+  display: none !important;
+}
+
+:root:not([data-theme="dark"]) .btn-theme-nav .icon-sun {
+  display: none !important;
+}
+:root:not([data-theme="dark"]) .btn-theme-nav .icon-moon {
+  display: block !important;
+}
