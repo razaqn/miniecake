@@ -4,6 +4,11 @@
  * Handles upload of Photos, Videos & Logos to Google Drive API v3 with local storage fallback
  */
 
+@ini_set('upload_max_filesize', '256M');
+@ini_set('post_max_size', '260M');
+@ini_set('memory_limit', '512M');
+@ini_set('max_execution_time', '300');
+
 header('Content-Type: application/json; charset=UTF-8');
 
 require_once __DIR__ . '/../config/app.php';
@@ -50,13 +55,19 @@ if (!$fileField) {
 $fileName = basename($fileField['name']);
 $tmpPath = $fileField['tmp_name'];
 $fileSize = $fileField['size'];
+$ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-// Max size 60MB
-if ($fileSize > 60 * 1024 * 1024) {
+// Check video type and raise limit to 250MB for video, 30MB for photos
+$videoExts = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v', 'quicktime'];
+$isVideoUpload = in_array($ext, $videoExts) || (!empty($_POST['type']) && $_POST['type'] === 'video') || isset($_FILES['video']);
+$maxBytes = $isVideoUpload ? (250 * 1024 * 1024) : (30 * 1024 * 1024);
+$maxLabel = $isVideoUpload ? '250MB' : '30MB';
+
+if ($fileSize > $maxBytes) {
     http_response_code(422);
     echo json_encode([
         'success' => false,
-        'message' => 'Ukuran file melebihi batas maksimal 60MB.'
+        'message' => "Ukuran file melebihi batas maksimal {$maxLabel}."
     ]);
     exit;
 }
@@ -67,7 +78,6 @@ $mimeType = finfo_file($finfo, $tmpPath);
 finfo_close($finfo);
 
 // Fallback for SVG or WebM if finfo returns text/plain or octet-stream
-$ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 if ($ext === 'svg' && str_contains($mimeType, 'text')) {
     $mimeType = 'image/svg+xml';
 } elseif ($ext === 'webm' && !str_starts_with($mimeType, 'video/')) {

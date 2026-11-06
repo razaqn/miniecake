@@ -616,6 +616,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   // CATEGORY MANAGEMENT
   // ==========================================
+  const catFormTitle = document.getElementById('catFormTitle');
+  const editCategoryOldName = document.getElementById('editCategoryOldName');
+  const btnSubmitCategory = document.getElementById('btnSubmitCategory');
+  const btnCancelCategoryEdit = document.getElementById('btnCancelCategoryEdit');
+
+  function resetCategoryForm() {
+    if (addCategoryForm) addCategoryForm.reset();
+    if (editCategoryOldName) editCategoryOldName.value = '';
+    if (catFormTitle) catFormTitle.textContent = '+ Tambah Kategori Baru';
+    if (btnSubmitCategory) btnSubmitCategory.querySelector('span').textContent = 'Simpan Kategori';
+    if (btnCancelCategoryEdit) btnCancelCategoryEdit.style.display = 'none';
+  }
+
+  if (btnCancelCategoryEdit) {
+    btnCancelCategoryEdit.addEventListener('click', resetCategoryForm);
+  }
+
   function renderCategoriesList() {
     if (!categoryItemsList) return;
 
@@ -639,35 +656,19 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }).join('');
 
-    // Attach Rename Event
+    // Attach Rename / Edit Event
     categoryItemsList.querySelectorAll('.btn-rename-cat').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => {
         const oldName = btn.getAttribute('data-name');
-        const newName = prompt(`Ubah nama kategori "${oldName}" menjadi:`, oldName);
-        if (!newName || newName.trim() === '' || newName.trim() === oldName) return;
+        if (newCategoryName) newCategoryName.value = oldName;
+        if (editCategoryOldName) editCategoryOldName.value = oldName;
+        if (catFormTitle) catFormTitle.textContent = `Edit Kategori: "${oldName}"`;
+        if (btnSubmitCategory) btnSubmitCategory.querySelector('span').textContent = 'Perbarui Kategori';
+        if (btnCancelCategoryEdit) btnCancelCategoryEdit.style.display = 'block';
 
-        try {
-          const response = await authFetch('../api/settings.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ _action: 'update_category', old_name: oldName, new_name: newName.trim() })
-          });
-          const res = await response.json();
-          if (res.success) {
-            categories = res.data;
-            // Update local products categories too
-            products.forEach(p => {
-              if (p.category === oldName) p.category = newName.trim();
-            });
-            updateCategoryDropdowns();
-            renderCategoriesList();
-            renderTable();
-            showToast(`Kategori berhasil diubah menjadi "${newName.trim()}".`);
-          } else {
-            showToast(res.message || 'Gagal mengubah kategori.', 'error');
-          }
-        } catch (err) {
-          showToast('Error: ' + err.message, 'error');
+        if (newCategoryName) {
+          newCategoryName.focus();
+          newCategoryName.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       });
     });
@@ -688,6 +689,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const res = await response.json();
           if (res.success) {
             categories = res.data;
+            if (editCategoryOldName && editCategoryOldName.value === name) {
+              resetCategoryForm();
+            }
             updateCategoryDropdowns();
             renderCategoriesList();
             showToast(`Kategori "${name}" berhasil dihapus.`);
@@ -701,29 +705,46 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Add Category Submit
+  // Add / Update Category Submit
   if (addCategoryForm) {
     addCategoryForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = newCategoryName.value.trim();
+      const oldName = editCategoryOldName ? editCategoryOldName.value.trim() : '';
       if (!name) return;
+
+      const isEditing = !!oldName;
+      const payload = isEditing 
+        ? { _action: 'update_category', old_name: oldName, new_name: name }
+        : { _action: 'add_category', name: name };
 
       try {
         const response = await authFetch('../api/settings.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ _action: 'add_category', name: name })
+          body: JSON.stringify(payload)
         });
         const res = await response.json();
         if (res.success) {
           categories = res.data;
-          newCategoryName.value = '';
+          
+          if (isEditing) {
+            // Update local products categories too
+            products.forEach(p => {
+              if ((p.category || '').toLowerCase() === oldName.toLowerCase()) {
+                p.category = name;
+              }
+            });
+            renderTable();
+          }
+
+          resetCategoryForm();
           updateCategoryDropdowns();
           renderCategoriesList();
           updateStats();
-          showToast(`Kategori "${name}" berhasil ditambahkan! 🎉`);
+          showToast(isEditing ? `Kategori "${oldName}" berhasil diubah menjadi "${name}".` : `Kategori "${name}" berhasil ditambahkan! 🎉`);
         } else {
-          showToast(res.message || 'Gagal menambahkan kategori.', 'error');
+          showToast(res.message || 'Gagal menyimpan kategori.', 'error');
         }
       } catch (err) {
         showToast('Error: ' + err.message, 'error');

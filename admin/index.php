@@ -230,16 +230,20 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
       </div>
 
       <div class="category-manager-grid">
-        <!-- Form Tambah Kategori -->
+        <!-- Form Tambah / Edit Kategori -->
         <div class="cat-form-card">
-          <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 12px; color: var(--text-main);">+ Tambah Kategori Baru</h3>
+          <h3 id="catFormTitle" style="font-size: 1.1rem; font-weight: 800; margin-bottom: 12px; color: var(--text-main);">+ Tambah Kategori Baru</h3>
           <form id="addCategoryForm">
+            <input type="hidden" id="editCategoryOldName" value="">
             <div class="form-group">
               <label class="form-label" for="newCategoryName">Nama Kategori *</label>
               <input type="text" id="newCategoryName" class="form-control" placeholder="Contoh: Chiffon Cake" required>
             </div>
-            <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
-              Simpan Kategori
+            <button type="submit" id="btnSubmitCategory" class="btn-primary" style="width: 100%; justify-content: center;">
+              <span>Simpan Kategori</span>
+            </button>
+            <button type="button" id="btnCancelCategoryEdit" class="btn-secondary" style="width: 100%; justify-content: center; display: none; margin-top: 8px;">
+              Batal Edit
             </button>
           </form>
         </div>

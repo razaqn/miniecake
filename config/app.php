@@ -57,27 +57,27 @@ function base_url($path = '') {
 
 /**
  * Build WhatsApp click to chat URL with ready-check message
+ * Moves product URL to line 1 for instant WhatsApp image card preview unfurling.
  */
-function build_whatsapp_url($phone, $productName, $price = '', $imageUrl = '', $productUrl = '') {
+function build_whatsapp_url($phone, $productName, $price = '', $productUrl = '') {
     // Sanitize phone number (remove +, spaces, hyphens)
     $cleanPhone = preg_replace('/[^0-9]/', '', (string)$phone);
     if (str_starts_with($cleanPhone, '0')) {
         $cleanPhone = '62' . substr($cleanPhone, 1);
     }
 
-    $message = "Halo Miniecake! ✨\n\n";
+    $message = "";
+    if (!empty($productUrl)) {
+        $message .= "{$productUrl}\n\n";
+    }
+
+    $message .= "Halo Miniecake! ✨🍰\n\n";
     $message .= "Saya tertarik dengan kue:\n";
     $message .= "*{$productName}*\n";
     if (!empty($price)) {
-        $message .= "Harga: " . format_rupiah($price) . "\n";
+        $message .= "• Harga: " . format_rupiah($price) . "\n";
     }
-    if (!empty($imageUrl)) {
-        $message .= "Foto Produk: {$imageUrl}\n";
-    }
-    if (!empty($productUrl)) {
-        $message .= "Link Katalog: {$productUrl}\n";
-    }
-    $message .= "\nApakah produk ini ready? Mohon info detail pemesanannya ya. Terima kasih! 💕";
+    $message .= "\nApakah kue ini ready stock / bisa dipesan? Terima kasih! 💕";
 
     return 'https://wa.me/' . $cleanPhone . '?text=' . urlencode($message);
 }

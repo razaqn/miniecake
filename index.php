@@ -35,6 +35,30 @@ if (str_starts_with($cleanWa, '0')) {
     $cleanWa = '62' . substr($cleanWa, 1);
 }
 $floatingWaUrl = "https://wa.me/{$cleanWa}?text=" . urlencode("Halo Miniecake! Saya ingin bertanya seputar katalog kue Anda ✨");
+
+// Check for deep-linked product for dynamic Open Graph & rich link previews
+$selectedProduct = null;
+$reqProductId = $_GET['product'] ?? $_GET['id'] ?? null;
+if ($reqProductId) {
+    foreach ($products as $p) {
+        if ($p['id'] === $reqProductId) {
+            $selectedProduct = $p;
+            break;
+        }
+    }
+}
+
+if ($selectedProduct) {
+    $pageTitle = $selectedProduct['name'] . " — " . ucfirst($appName);
+    $pageDesc = !empty($selectedProduct['short_desc']) ? $selectedProduct['short_desc'] : (!empty($selectedProduct['full_desc']) ? substr(strip_tags($selectedProduct['full_desc']), 0, 160) : $appTagline);
+    $ogImg = !empty($selectedProduct['images'][0]) ? format_image_url($selectedProduct['images'][0]) : (!empty($selectedProduct['image']) ? format_image_url($selectedProduct['image']) : format_image_url($logoUrl));
+    $canonicalUrl = base_url('?product=' . urlencode($selectedProduct['id']));
+} else {
+    $pageTitle = ucfirst($appName) . " — " . $appTagline;
+    $pageDesc = "Katalog kue dan pastry cantik, lezat, dan minimalis dari " . $appName . ". Pesan langsung melalui WhatsApp.";
+    $ogImg = format_image_url($logoUrl);
+    $canonicalUrl = base_url();
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -42,11 +66,25 @@ $floatingWaUrl = "https://wa.me/{$cleanWa}?text=" . urlencode("Halo Miniecake! S
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="no-referrer">
-  <title><?= e(ucfirst($appName)) ?> — <?= e($appTagline) ?></title>
-  <meta name="description" content="Katalog kue dan pastry cantik, lezat, dan minimalis dari <?= e($appName) ?>. Pesan langsung melalui WhatsApp.">
+  <title><?= e($pageTitle) ?></title>
+  <meta name="description" content="<?= e($pageDesc) ?>">
+
+  <!-- Open Graph Meta Tags (for WhatsApp Link Preview) -->
+  <meta property="og:type" content="product">
+  <meta property="og:title" content="<?= e($pageTitle) ?>">
+  <meta property="og:description" content="<?= e($pageDesc) ?>">
+  <meta property="og:image" content="<?= e($ogImg) ?>">
+  <meta property="og:url" content="<?= e($canonicalUrl) ?>">
+  <meta property="og:site_name" content="<?= e($appName) ?>">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<?= e($pageTitle) ?>">
+  <meta name="twitter:description" content="<?= e($pageDesc) ?>">
+  <meta name="twitter:image" content="<?= e($ogImg) ?>">
   
   <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="<?= e($logoUrl) ?>">
+  <link rel="icon" type="image/svg+xml" href="<?= e(format_image_url($logoUrl)) ?>">
   
   <!-- CSS Stylesheet -->
   <link rel="stylesheet" href="assets/css/style.css">
@@ -89,6 +127,13 @@ $floatingWaUrl = "https://wa.me/{$cleanWa}?text=" . urlencode("Halo Miniecake! S
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
           <span>Favorit</span>
           <span id="favCountBadge" class="fav-badge-count">0</span>
+        </button>
+
+        <!-- Shopping Cart Nav Pill -->
+        <button type="button" class="btn-cart-nav" id="btnCartNav" title="Buka Keranjang Belanja">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span>Keranjang</span>
+          <span id="cartCountBadge" class="cart-badge-count">0</span>
         </button>
       </div>
     </div>
@@ -248,24 +293,38 @@ $floatingWaUrl = "https://wa.me/{$cleanWa}?text=" . urlencode("Halo Miniecake! S
             </ul>
           </div>
 
-          <!-- Direct WhatsApp Order Button -->
-          <a href="#" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-order" id="modalWaBtn">
-            <svg viewBox="0 0 24 24">
-              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086.159.058 1.011.477 1.184.564.173.086.289.13.332.202.043.072.043.419-.101.824z"/>
-              <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.98-1.306A9.957 9.957 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.614 0-3.118-.456-4.402-1.246l-.316-.194-2.964.777.791-2.89-.208-.33A7.962 7.962 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/>
-            </svg>
-            <span>Tanya Ketersediaan di WhatsApp</span>
-          </a>
+          <!-- Modal CTA Actions (Add to Cart & Direct WhatsApp) -->
+          <div class="modal-cta-group">
+            <button type="button" class="btn-add-to-cart" id="modalAddToCartBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              <span>+ Tambah ke Keranjang</span>
+            </button>
+
+            <!-- Direct WhatsApp Order Button -->
+            <a href="#" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-order" id="modalWaBtn">
+              <svg viewBox="0 0 24 24">
+                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086.159.058 1.011.477 1.184.564.173.086.289.13.332.202.043.072.043.419-.101.824z"/>
+                <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.98-1.306A9.957 9.957 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.614 0-3.118-.456-4.402-1.246l-.316-.194-2.964.777.791-2.89-.208-.33A7.962 7.962 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/>
+              </svg>
+              <span>Tanya Ketersediaan di WhatsApp</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ==========================================
-       STICKY FLOATING SOCIAL MEDIA BUTTONS
-       (WhatsApp, Instagram, Facebook, TikTok)
+       STICKY FLOATING BUTTONS
+       (Cart, WhatsApp, Instagram, Facebook, TikTok)
        ========================================== -->
   <aside class="sticky-social-bar" aria-label="Social Media Miniecake">
+    <!-- Floating Cart Button -->
+    <button type="button" class="social-float-btn social-cart" id="btnFloatingCart" data-tooltip="Keranjang Belanja" aria-label="Keranjang">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      <span class="floating-cart-badge" id="floatingCartCount">0</span>
+    </button>
+
     <a href="<?= e($floatingWaUrl) ?>" target="_blank" rel="noopener noreferrer" class="social-float-btn social-wa" data-tooltip="Chat WhatsApp" aria-label="WhatsApp">
       <svg viewBox="0 0 24 24">
         <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086.159.058 1.011.477 1.184.564.173.086.289.13.332.202.043.072.043.419-.101.824z"/>
@@ -332,12 +391,58 @@ $floatingWaUrl = "https://wa.me/{$cleanWa}?text=" . urlencode("Halo Miniecake! S
     </div>
   </footer>
 
+  <!-- ==========================================
+       SHOPPING CART (KERANJANG BELANJA) DRAWER
+       ========================================== -->
+  <div class="cart-drawer-overlay" id="cartDrawerOverlay">
+    <div class="cart-drawer" id="cartDrawer">
+      <div class="cart-drawer-header">
+        <div class="cart-drawer-title-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <h3 class="cart-drawer-title">Keranjang Belanja</h3>
+          <span class="cart-total-badge" id="cartDrawerBadge">0</span>
+        </div>
+        <button type="button" class="btn-close-drawer" id="btnCloseCartDrawer" aria-label="Tutup Keranjang">&times;</button>
+      </div>
+
+      <!-- Select All Toolbar -->
+      <div class="cart-toolbar" id="cartToolbar" style="display: none;">
+        <label class="cart-checkbox-wrap">
+          <input type="checkbox" id="cartSelectAllCheckbox" checked>
+          <span>Pilih Semua (<span id="cartSelectedCountText">0</span>)</span>
+        </label>
+        <button type="button" class="btn-clear-cart" id="btnClearSelectedCart">Hapus Terpilih</button>
+      </div>
+
+      <!-- Cart Items List Container -->
+      <div class="cart-drawer-body" id="cartDrawerBody">
+        <!-- Dynamic via JS -->
+      </div>
+
+      <!-- Cart Footer / WhatsApp Checkout -->
+      <div class="cart-drawer-footer" id="cartDrawerFooter" style="display: none;">
+        <div class="cart-summary-row">
+          <span class="summary-label">Total Dipilih:</span>
+          <span class="summary-price" id="cartTotalPrice">Rp 0</span>
+        </div>
+        <button type="button" class="btn-cart-whatsapp" id="btnCartWhatsApp">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086.159.058 1.011.477 1.184.564.173.086.289.13.332.202.043.072.043.419-.101.824z"/>
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.98-1.306A9.957 9.957 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.614 0-3.118-.456-4.402-1.246l-.316-.194-2.964.777.791-2.89-.208-.33A7.962 7.962 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/>
+          </svg>
+          <span id="cartWhatsAppLabel">Tanya Admin via WhatsApp (0 Produk)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Pass Data to JavaScript -->
   <script>
     window.INITIAL_PRODUCTS = <?= json_encode($products, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
     window.APP_CONFIG = {
       whatsappNumber: "<?= e($waNumber) ?>",
-      appName: "<?= e($appName) ?>"
+      appName: "<?= e($appName) ?>",
+      baseUrl: "<?= e(base_url()) ?>"
     };
   </script>
   <script src="assets/js/app.js"></script>
