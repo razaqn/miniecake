@@ -136,14 +136,14 @@ if ($selectedProduct) {
         <!-- Love / Favorites Nav Pill -->
         <button type="button" class="btn-fav-nav" id="btnFavNav" title="Lihat kue yang kamu sukai">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-          <span>Favorit</span>
+          <span class="nav-btn-text">Favorit</span>
           <span id="favCountBadge" class="fav-badge-count">0</span>
         </button>
 
         <!-- Shopping Cart Nav Pill -->
         <button type="button" class="btn-cart-nav" id="btnCartNav" title="Buka Keranjang Belanja">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-          <span>Keranjang</span>
+          <span class="nav-btn-text">Keranjang</span>
           <span id="cartCountBadge" class="cart-badge-count">0</span>
         </button>
 
@@ -151,7 +151,7 @@ if ($selectedProduct) {
         <button type="button" class="btn-theme-nav" id="btnThemeToggle" title="Ganti Mode Gelap/Terang" aria-label="Ganti Tema">
           <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
           <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-          <span class="theme-label">Mode</span>
+          <span class="theme-label nav-btn-text">Mode</span>
         </button>
       </div>
     </div>
