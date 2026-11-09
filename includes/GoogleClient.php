@@ -329,6 +329,49 @@ class GoogleClient {
     }
 
     /**
+     * Ensure a sheet tab exists, if not create it with initial headers
+     */
+    public function ensureSheetExists($sheetTitle, $headers = []) {
+        if (!$this->isSheetsConfigured()) {
+            return false;
+        }
+
+        $sheetId = $this->getSheetIdByTitle($sheetTitle);
+        if ($sheetId !== null) {
+            return true;
+        }
+
+        try {
+            $batchUrl = "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}:batchUpdate";
+            $body = [
+                'requests' => [
+                    [
+                        'addSheet' => [
+                            'properties' => [
+                                'title' => $sheetTitle
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+            $res = $this->apiRequest($batchUrl, 'POST', $body);
+            if (!empty($res['replies'][0]['addSheet']['properties']['sheetId'])) {
+                $this->sheetIds[$sheetTitle] = $res['replies'][0]['addSheet']['properties']['sheetId'];
+            }
+
+            if (!empty($headers)) {
+                $range = rawurlencode($sheetTitle . '!A1');
+                $url = "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/{$range}?valueInputOption=USER_ENTERED";
+                $this->apiRequest($url, 'PUT', ['values' => [$headers]]);
+            }
+            return true;
+        } catch (Exception $e) {
+            error_log("Failed to create sheet tab '{$sheetTitle}': " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Initialize Sheet with Header if empty or ensure Video column exists
      */
     public function initializeSheetHeader() {

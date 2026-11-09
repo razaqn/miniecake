@@ -36,7 +36,8 @@ class SettingsRepository {
             'address' => 'Jl. Melati No. 12, Jakarta Selatan',
             'opening_hours' => 'Setiap Hari 08:00 - 20:00 WIB',
             'categories' => ['Bento Cake', 'Whole Cake', 'Cupcakes', 'Dessert Box', 'Pastry'],
-            'banners' => []
+            'banners' => [],
+            'branches' => []
         ];
 
         if ($this->useSheets) {
@@ -46,6 +47,7 @@ class SettingsRepository {
                 $merged['logo_url'] = format_image_url($merged['logo_url'] ?? 'assets/images/logo.svg');
                 $merged['categories'] = $this->getCategories();
                 $merged['banners'] = $this->getBanners();
+                $merged['branches'] = $this->getBranches();
                 return $merged;
             } catch (Exception $e) {
                 error_log("Failed to load settings from Google Sheet: " . $e->getMessage());
@@ -57,10 +59,15 @@ class SettingsRepository {
             $content = file_get_contents($this->filePath);
             $local = json_decode($content, true);
             if (is_array($local)) {
-                return array_merge($defaults, $local);
+                $merged = array_merge($defaults, $local);
+                if (empty($merged['branches'])) {
+                    $merged['branches'] = $this->getDefaultBranches();
+                }
+                return $merged;
             }
         }
 
+        $defaults['branches'] = $this->getDefaultBranches();
         return $defaults;
     }
 
@@ -444,6 +451,268 @@ class SettingsRepository {
         if (file_exists($this->filePath)) {
             $data = json_decode(file_get_contents($this->filePath), true) ?: [];
             $data['banners'] = $banners;
+            @file_put_contents($this->filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    // ==========================================
+    // BRANCH & MULTI-LOCATION MANAGEMENT
+    // ==========================================
+
+    public function getDefaultBranches() {
+        return [
+            [
+                'id' => 'BR-01',
+                'name' => env('APP_NAME', 'miniecake') . ' - Pusat',
+                'address' => 'Jl. Melati No. 12, Jakarta Selatan',
+                'whatsapp_number' => env('WHATSAPP_NUMBER', '6281234567890'),
+                'is_default' => true
+            ]
+        ];
+    }
+
+    public function getBranches() {
+        if ($this->useSheets) {
+            try {
+                $this->googleClient->ensureSheetExists('Branches', ['ID', 'Name', 'Address', 'WhatsApp', 'Is_Default']);
+                $range = rawurlencode('Branches!A1:E50');
+                $url = "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/{$range}";
+                $res = $this->googleClient->apiRequest($url);
+                $rows = $res['values'] ?? [];
+
+                $branches = [];
+                for ($i = 1; $i < count($rows); $i++) {
+                    $r = $rows[$i];
+                    if (empty($r) || empty(trim($r[0] ?? ''))) continue;
+
+                    $branches[] = [
+                        'id' => trim($r[0] ?? ''),
+                        'name' => trim($r[1] ?? ''),
+                        'address' => trim($r[2] ?? ''),
+                        'whatsapp_number' => trim($r[3] ?? ''),
+                        'is_default' => strtolower(trim($r[4] ?? 'false')) === 'true' || trim($r[4] ?? '') === '1'
+                    ];
+                }
+
+                if (!empty($branches)) {
+                    // Ensure at least one is default
+                    $hasDefault = false;
+                    foreach ($branches as $b) {
+                        if ($b['is_default']) { $hasDefault = true; break; }
+                    }
+                    if (!$hasDefault && count($branches) > 0) {
+                        $branches[0]['is_default'] = true;
+                    }
+                    return $branches;
+                } else {
+                    // Seed from local settings or default
+                    $initial = $this->getDefaultBranches();
+                    if (file_exists($this->filePath)) {
+                        $d = json_decode(file_get_contents($this->filePath), true);
+                        if (!empty($d['branches']) && is_array($d['branches'])) {
+                            $initial = $d['branches'];
+                        }
+                    }
+                    foreach ($initial as $b) {
+                        $row = [$b['id'], $b['name'], $b['address'], $b['whatsapp_number'], !empty($b['is_default']) ? 'true' : 'false'];
+                        $appendRange = rawurlencode('Branches!A:E');
+                        $appendUrl = "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/{$appendRange}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS";
+                        $this->googleClient->apiRequest($appendUrl, 'POST', ['values' => [$row]]);
+                    }
+                    return $initial;
+                }
+            } catch (Exception $e) {
+                error_log("Error reading Branches from Sheet: " . $e->getMessage());
+            }
+        }
+
+        if (file_exists($this->filePath)) {
+            $data = json_decode(file_get_contents($this->filePath), true);
+            if (!empty($data['branches']) && is_array($data['branches'])) {
+                return $data['branches'];
+            }
+        }
+
+        return $this->getDefaultBranches();
+    }
+
+    public function saveBranch($branchData) {
+        $id = $branchData['id'] ?? null;
+        $isNew = empty($id);
+        if ($isNew) {
+            $id = 'BR-' . strtoupper(substr(md5(uniqid()), 0, 6));
+        }
+
+        $name = trim($branchData['name'] ?? '');
+        if (empty($name)) {
+            throw new Exception("Nama cabang tidak boleh kosong.");
+        }
+
+        $address = trim($branchData['address'] ?? '');
+        $whatsappNumber = trim($branchData['whatsapp_number'] ?? '');
+        $whatsappNumber = preg_replace('/[^0-9]/', '', $whatsappNumber);
+        if ($whatsappNumber !== '' && str_starts_with($whatsappNumber, '0')) {
+            $whatsappNumber = '62' . substr($whatsappNumber, 1);
+        }
+
+        $isDefault = !empty($branchData['is_default']);
+
+        $existing = $this->getBranches();
+
+        // If this is the only branch, make it default automatically
+        if (count($existing) === 0 || (count($existing) === 1 && $existing[0]['id'] === $id)) {
+            $isDefault = true;
+        }
+
+        // If marked as default, unset other branches' default
+        if ($isDefault) {
+            foreach ($existing as &$b) {
+                if ($b['id'] !== $id) {
+                    $b['is_default'] = false;
+                }
+            }
+            unset($b);
+        }
+
+        $branchRow = [$id, $name, $address, $whatsappNumber, $isDefault ? 'true' : 'false'];
+
+        if ($this->useSheets) {
+            try {
+                $this->googleClient->ensureSheetExists('Branches', ['ID', 'Name', 'Address', 'WhatsApp', 'Is_Default']);
+
+                if ($isNew) {
+                    $range = rawurlencode('Branches!A:E');
+                    $url = "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/{$range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS";
+                    $this->googleClient->apiRequest($url, 'POST', ['values' => [$branchRow]]);
+                } else {
+                    $range = rawurlencode('Branches!A1:A50');
+                    $url = "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/{$range}";
+                    $res = $this->googleClient->apiRequest($url);
+                    $rows = $res['values'] ?? [];
+
+                    $foundRow = null;
+                    foreach ($rows as $idx => $r) {
+                        if (!empty($r[0]) && trim($r[0]) === $id) {
+                            $foundRow = $idx + 1;
+                            break;
+                        }
+                    }
+
+                    if ($foundRow) {
+                        $updateRange = rawurlencode("Branches!A{$foundRow}:E{$foundRow}");
+                        $updateUrl = "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/{$updateRange}?valueInputOption=USER_ENTERED";
+                        $this->googleClient->apiRequest($updateUrl, 'PUT', ['values' => [$branchRow]]);
+                    } else {
+                        $appendRange = rawurlencode('Branches!A:E');
+                        $appendUrl = "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/{$appendRange}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS";
+                        $this->googleClient->apiRequest($appendUrl, 'POST', ['values' => [$branchRow]]);
+                    }
+                }
+
+                // If isDefault was set to true, also update all other rows in sheets to false if needed
+                if ($isDefault) {
+                    $range = rawurlencode('Branches!A1:E50');
+                    $url = "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/{$range}";
+                    $res = $this->googleClient->apiRequest($url);
+                    $rows = $res['values'] ?? [];
+                    for ($i = 1; $i < count($rows); $i++) {
+                        $r = $rows[$i];
+                        if (!empty($r[0]) && trim($r[0]) !== $id) {
+                            $rowNum = $i + 1;
+                            $colRange = rawurlencode("Branches!E{$rowNum}");
+                            $colUrl = "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/{$colRange}?valueInputOption=USER_ENTERED";
+                            $this->googleClient->apiRequest($colUrl, 'PUT', ['values' => [['false']]]);
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("Failed to save Branch in Google Sheet: " . $e->getMessage());
+            }
+        }
+
+        // Update local list
+        $found = false;
+        foreach ($existing as &$b) {
+            if ($b['id'] === $id) {
+                $b['name'] = $name;
+                $b['address'] = $address;
+                $b['whatsapp_number'] = $whatsappNumber;
+                $b['is_default'] = $isDefault;
+                $found = true;
+                break;
+            }
+        }
+        unset($b);
+
+        if (!$found) {
+            $existing[] = [
+                'id' => $id,
+                'name' => $name,
+                'address' => $address,
+                'whatsapp_number' => $whatsappNumber,
+                'is_default' => $isDefault
+            ];
+        }
+
+        $this->syncLocalBranches($existing);
+        return $existing;
+    }
+
+    public function deleteBranch($id) {
+        $id = trim($id);
+        $branches = $this->getBranches();
+
+        if (count($branches) <= 1) {
+            throw new Exception("Tidak dapat menghapus cabang terakhir. Toko minimal harus memiliki 1 cabang.");
+        }
+
+        $wasDefault = false;
+        foreach ($branches as $b) {
+            if ($b['id'] === $id && !empty($b['is_default'])) {
+                $wasDefault = true;
+                break;
+            }
+        }
+
+        if ($this->useSheets) {
+            try {
+                $range = rawurlencode('Branches!A1:A50');
+                $url = "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/{$range}";
+                $res = $this->googleClient->apiRequest($url);
+                $rows = $res['values'] ?? [];
+
+                $foundRow = null;
+                foreach ($rows as $idx => $r) {
+                    if (!empty($r[0]) && trim($r[0]) === $id) {
+                        $foundRow = $idx + 1;
+                        break;
+                    }
+                }
+
+                if ($foundRow) {
+                    $this->googleClient->deleteSheetRow('Branches', $foundRow);
+                }
+            } catch (Exception $e) {
+                error_log("Failed to delete Branch from Google Sheet: " . $e->getMessage());
+            }
+        }
+
+        $updated = array_values(array_filter($branches, fn($b) => $b['id'] !== $id));
+        if ($wasDefault && count($updated) > 0) {
+            $updated[0]['is_default'] = true;
+            // Also update that first branch as default
+            $this->saveBranch($updated[0]);
+        } else {
+            $this->syncLocalBranches($updated);
+        }
+
+        return $this->getBranches();
+    }
+
+    private function syncLocalBranches($branches) {
+        if (file_exists($this->filePath)) {
+            $data = json_decode(file_get_contents($this->filePath), true) ?: [];
+            $data['branches'] = $branches;
             @file_put_contents($this->filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
         }
     }

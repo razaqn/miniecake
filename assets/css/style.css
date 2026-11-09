@@ -2218,3 +2218,248 @@ img, video {
 :root:not([data-theme="dark"]) .btn-theme-nav .icon-moon {
   display: block !important;
 }
+
+/* ==========================================
+   BRANCH SELECTOR MODAL (PILIH CABANG WA)
+   ========================================== */
+.branch-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.branch-modal-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+.branch-modal-card {
+  background: #ffffff;
+  border: 1px solid #fbcfe8;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(236, 72, 153, 0.25);
+  transform: scale(0.95) translateY(12px);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.branch-modal-overlay.active .branch-modal-card {
+  transform: scale(1) translateY(0);
+}
+
+.branch-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #fce7f3;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(253, 242, 248, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+}
+
+.branch-modal-title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.branch-modal-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  padding-top: 2px;
+}
+
+.branch-modal-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.branch-modal-subtitle {
+  font-size: 0.82rem;
+  color: #6b7280;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.btn-close-branch-modal {
+  background: transparent;
+  border: none;
+  font-size: 1.6rem;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.btn-close-branch-modal:hover {
+  color: #db2777;
+  transform: scale(1.1);
+}
+
+.branch-modal-body {
+  padding: 18px 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.branch-select-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1.5px solid #fbcfe8;
+  border-radius: 16px;
+  background: #fff5f8;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+}
+
+.branch-select-card:hover {
+  border-color: #ec4899;
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -5px rgba(236, 72, 153, 0.2);
+}
+
+.branch-select-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.branch-select-name {
+  font-weight: 800;
+  font-size: 0.98rem;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.branch-select-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: #fdf2f8;
+  color: #db2777;
+  border: 1px solid #fbcfe8;
+}
+
+.branch-select-address {
+  font-size: 0.82rem;
+  color: #4b5563;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.45;
+}
+
+.branch-select-address svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #ec4899;
+}
+
+.branch-select-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed #fce7f3;
+  font-size: 0.8rem;
+}
+
+.branch-select-phone {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #059669;
+  font-weight: 700;
+}
+
+.branch-select-cta {
+  color: #db2777;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Dark Mode Branch Modal Styles */
+[data-theme="dark"] .branch-modal-card {
+  background: #171a24;
+  border-color: #33263a;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .branch-modal-header {
+  background: linear-gradient(135deg, #201724 0%, #171a24 100%);
+  border-bottom-color: #33263a;
+}
+
+[data-theme="dark"] .branch-modal-title {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .branch-modal-subtitle {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .branch-select-card {
+  background: #1f1b29;
+  border-color: #382c42;
+}
+
+[data-theme="dark"] .branch-select-card:hover {
+  background: #2a2238;
+  border-color: #f472b6;
+  box-shadow: 0 10px 20px -5px rgba(244, 114, 182, 0.2);
+}
+
+[data-theme="dark"] .branch-select-name {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .branch-select-badge {
+  background: #2e1c33;
+  color: #f472b6;
+  border-color: #4a2854;
+}
+
+[data-theme="dark"] .branch-select-address {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .branch-select-action {
+  border-top-color: #382c42;
+}
+
+[data-theme="dark"] .branch-select-cta {
+  color: #f472b6;
+}

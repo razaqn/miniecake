@@ -35,5 +35,21 @@
             "button_text": "Pesan Custom",
             "active": true
         }
+    ],
+    "branches": [
+        {
+            "id": "BR-01",
+            "name": "Miniecake - Pusat (Jakarta Selatan)",
+            "address": "Jl. Melati No. 12, Jakarta Selatan",
+            "whatsapp_number": "6281234567890",
+            "is_default": true
+        },
+        {
+            "id": "BR-02",
+            "name": "Miniecake - Cabang Kemang (Jakarta Selatan)",
+            "address": "Jl. Kemang Raya No. 45, Jakarta Selatan",
+            "whatsapp_number": "6281987654321",
+            "is_default": false
+        }
     ]
 }

@@ -36,6 +36,8 @@ try {
                 $banners = array_values(array_filter($banners, fn($b) => !empty($b['active'])));
             }
             sendSettingsResponse(200, $banners);
+        } elseif ($type === 'branches') {
+            sendSettingsResponse(200, $settingsRepo->getBranches());
         } else {
             sendSettingsResponse(200, $settingsRepo->getAll());
         }
@@ -81,6 +83,16 @@ try {
             $id = $input['id'] ?? '';
             $banners = $settingsRepo->deleteBanner($id);
             sendSettingsResponse(200, $banners, 'Banner berhasil dihapus.');
+        }
+
+        // Branch / Lokasi Cabang Management
+        elseif ($action === 'save_branch') {
+            $branches = $settingsRepo->saveBranch($input);
+            sendSettingsResponse(200, $branches, 'Data cabang berhasil disimpan.');
+        } elseif ($action === 'delete_branch') {
+            $id = $input['id'] ?? '';
+            $branches = $settingsRepo->deleteBranch($id);
+            sendSettingsResponse(200, $branches, 'Cabang berhasil dihapus.');
         } else {
             sendSettingsResponse(400, null, 'Aksi tidak dikenal.');
         }

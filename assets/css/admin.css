@@ -590,6 +590,91 @@ input, select, textarea {
 }
 
 /* ==========================================
+   BRANCH / LOKASI CABANG MANAGEMENT
+   ========================================== */
+.branch-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.branch-admin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: var(--ultra-soft-pink);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.branch-admin-card.is-default {
+  border-color: var(--primary-pink);
+  box-shadow: 0 0 0 1px var(--primary-pink);
+}
+
+.branch-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.branch-card-title {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.branch-default-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: #fdf2f8;
+  color: #db2777;
+  border: 1px solid #fbcfe8;
+}
+
+.branch-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.branch-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.branch-info-row svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.branch-phone-link {
+  color: #059669;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.branch-phone-link:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================
    BANNER MANAGEMENT SECTION
    ========================================== */
 .banners-grid {

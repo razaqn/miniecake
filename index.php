@@ -14,11 +14,27 @@ $settingsRepo = new SettingsRepository();
 $settings = $settingsRepo->getAll();
 $products = $repo->getAll();
 $categories = $repo->getCategories();
+$branches = $settingsRepo->getBranches();
 
 $appName = $settings['app_name'] ?? env('APP_NAME', 'miniecake');
 $appTagline = $settings['app_tagline'] ?? env('APP_TAGLINE', 'Sweet Moments in Every Bite');
 $logoUrl = !empty($settings['logo_url']) ? $settings['logo_url'] : 'assets/images/logo.svg';
 $waNumber = $settings['whatsapp_number'] ?? env('WHATSAPP_NUMBER', '6281234567890');
+
+// Find default branch for fallback
+$defaultBranch = null;
+foreach ($branches as $b) {
+    if (!empty($b['is_default'])) {
+        $defaultBranch = $b;
+        break;
+    }
+}
+if (!$defaultBranch && !empty($branches)) {
+    $defaultBranch = $branches[0];
+}
+if ($defaultBranch && !empty($defaultBranch['whatsapp_number'])) {
+    $waNumber = $defaultBranch['whatsapp_number'];
+}
 $igUrl = $settings['instagram_url'] ?? env('INSTAGRAM_URL', 'https://instagram.com/miniecake');
 $fbUrl = $settings['facebook_url'] ?? env('FACEBOOK_URL', 'https://facebook.com/miniecake');
 $tiktokUrl = $settings['tiktok_url'] ?? env('TIKTOK_URL', 'https://tiktok.com/@miniecake');
@@ -454,13 +470,36 @@ if ($selectedProduct) {
     </div>
   </div>
 
+  <!-- ==========================================
+       BRANCH SELECTOR MODAL (PILIH CABANG WA)
+       ========================================== -->
+  <div class="branch-modal-overlay" id="branchSelectorModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="branch-modal-card">
+      <div class="branch-modal-header">
+        <div class="branch-modal-title-wrap">
+          <span class="branch-modal-icon">📍</span>
+          <div>
+            <h3 class="branch-modal-title">Pilih Cabang Miniecake</h3>
+            <p class="branch-modal-subtitle">Pilih cabang terdekat untuk terhubung langsung dengan admin WhatsApp kami:</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-branch-modal" id="btnCloseBranchModal" aria-label="Tutup Pilihan Cabang">&times;</button>
+      </div>
+
+      <div class="branch-modal-body" id="branchSelectorList">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </div>
+  </div>
+
   <!-- Pass Data to JavaScript -->
   <script>
     window.INITIAL_PRODUCTS = <?= json_encode($products, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
     window.APP_CONFIG = {
       whatsappNumber: "<?= e($waNumber) ?>",
       appName: "<?= e($appName) ?>",
-      baseUrl: "<?= e(base_url()) ?>"
+      baseUrl: "<?= e(base_url()) ?>",
+      branches: <?= json_encode($branches, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
     };
   </script>
   <script src="assets/js/app.js"></script>

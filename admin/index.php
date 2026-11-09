@@ -20,6 +20,7 @@ $products = $repo->getAll();
 $categories = $repo->getCategories();
 $settings = $settingsRepo->getAll();
 $banners = $settingsRepo->getBanners();
+$branches = $settingsRepo->getBranches();
 $sourceStatus = $repo->getSourceStatus();
 
 // Stats calculation
@@ -96,6 +97,9 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
       </button>
       <button type="button" class="admin-tab-btn" data-tab="tabBanners">
         <span>🖼️ Banner Promo</span>
+      </button>
+      <button type="button" class="admin-tab-btn" data-tab="tabBranches">
+        <span>📍 Cabang &amp; WA</span>
       </button>
       <button type="button" class="admin-tab-btn" data-tab="tabSettings">
         <span>⚙️ Kontak &amp; Logo Web</span>
@@ -286,7 +290,73 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
     </section>
 
     <!-- ==========================================
-         TAB 4: KONTAK & LOGO WEB
+         TAB 4: MANAJEMEN CABANG & WHATSAPP
+         ========================================== -->
+    <section class="admin-tab-content" id="tabBranches">
+      <div class="admin-header-row">
+        <div class="admin-page-title">
+          <h1>Lokasi Cabang &amp; WhatsApp Auto-Chat</h1>
+          <p>Atur cabang toko dan nomor WhatsApp masing-masing. Pelanggan akan memilih cabang saat ingin chat produk atau checkout.</p>
+        </div>
+      </div>
+
+      <div class="category-manager-grid">
+        <!-- Form Tambah / Edit Cabang -->
+        <div class="cat-form-card">
+          <h3 id="branchFormTitle" style="font-size: 1.1rem; font-weight: 800; margin-bottom: 12px; color: var(--text-main);">+ Tambah Cabang Baru</h3>
+          <form id="branchForm">
+            <input type="hidden" id="formBranchId" value="">
+            
+            <div class="form-group">
+              <label class="form-label" for="branchName">Nama Cabang *</label>
+              <input type="text" id="branchName" class="form-control" placeholder="Contoh: Miniecake - Cabang Tebet" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="branchPhone">Nomor WhatsApp Cabang *</label>
+              <input type="text" id="branchPhone" class="form-control" placeholder="Contoh: 6281234567890 (kode negara tanpa +)" required>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Pesan WhatsApp produk &amp; keranjang akan ditujukan ke nomor ini.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="branchAddress">Alamat Lengkap Cabang *</label>
+              <textarea id="branchAddress" class="form-control" rows="3" placeholder="Contoh: Jl. Tebet Barat Dalam Raya No. 12, Tebet, Jakarta Selatan" required></textarea>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+              <input type="checkbox" id="branchIsDefault" style="width: 18px; height: 18px; accent-color: #ec4899; cursor: pointer;">
+              <label for="branchIsDefault" style="font-size: 0.88rem; font-weight: 600; cursor: pointer; margin: 0; color: var(--text-main);">
+                Jadikan Cabang Utama (Default)
+              </label>
+            </div>
+
+            <div style="margin-top: 16px;">
+              <button type="submit" id="btnSubmitBranch" class="btn-primary" style="width: 100%; justify-content: center;">
+                <span>Simpan Cabang</span>
+              </button>
+              <button type="button" id="btnCancelBranchEdit" class="btn-secondary" style="width: 100%; justify-content: center; display: none; margin-top: 8px;">
+                Batal Edit
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Daftar Cabang Aktif -->
+        <div class="cat-list-card">
+          <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">Daftar Cabang Aktif</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+            Jika toko memiliki lebih dari 1 cabang, pelanggan akan diminta memilih cabang terlebih dahulu sebelum membuka WhatsApp.
+          </p>
+
+          <div class="branch-items-list" id="branchItemsList">
+            <!-- Rendered dynamically by admin.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 5: KONTAK & LOGO WEB
          ========================================== -->
     <section class="admin-tab-content" id="tabSettings">
       <div class="admin-header-row">
@@ -607,6 +677,7 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
     window.INITIAL_PRODUCTS = <?= json_encode($products, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
     window.INITIAL_CATEGORIES = <?= json_encode($categories, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
     window.INITIAL_BANNERS = <?= json_encode($banners, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+    window.INITIAL_BRANCHES = <?= json_encode($branches, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
     window.INITIAL_SETTINGS = <?= json_encode($settings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
     window.ADMIN_TOKEN = <?= json_encode(Auth::getToken()) ?>;
     window.BASE_URL = <?= json_encode(base_url()) ?>;

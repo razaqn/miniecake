@@ -138,6 +138,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // WhatsApp Config
   const whatsappNumber = window.APP_CONFIG?.whatsappNumber || '6281234567890';
+  const branches = window.APP_CONFIG?.branches || [];
+
+  // Branch Selector Modal Elements
+  const branchSelectorModal = document.getElementById('branchSelectorModal');
+  const btnCloseBranchModal = document.getElementById('btnCloseBranchModal');
+  const branchSelectorList = document.getElementById('branchSelectorList');
 
   /**
    * Format number as IDR Currency
@@ -172,6 +178,87 @@ document.addEventListener('DOMContentLoaded', () => {
       return 'api/image.php?id=' + driveMatch[1];
     }
     return trimmed;
+  }
+
+  /**
+   * Direct WhatsApp message sender
+   */
+  function sendWhatsAppMessage(phone, message) {
+    let cleanPhone = (phone || whatsappNumber || '').replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '62' + cleanPhone.substring(1);
+    }
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
+  }
+
+  /**
+   * Prompt branch selection modal if multiple branches exist, or direct open if <= 1
+   */
+  function promptBranchSelection(message, defaultPhone = null) {
+    if (!branches || branches.length <= 1) {
+      const targetPhone = (branches && branches[0]?.whatsapp_number) ? branches[0].whatsapp_number : (defaultPhone || whatsappNumber);
+      sendWhatsAppMessage(targetPhone, message);
+      return;
+    }
+
+    renderBranchSelector(message);
+    if (branchSelectorModal) {
+      branchSelectorModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeBranchSelector() {
+    if (branchSelectorModal) {
+      branchSelectorModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function renderBranchSelector(message) {
+    if (!branchSelectorList) return;
+
+    branchSelectorList.innerHTML = branches.map(b => {
+      const isDef = !!b.is_default;
+      let cleanPhone = (b.whatsapp_number || '').replace(/[^0-9]/g, '');
+      if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
+
+      return `
+        <div class="branch-select-card" data-phone="${escapeHtml(b.whatsapp_number)}">
+          <div class="branch-select-top">
+            <div class="branch-select-name">
+              <span>${escapeHtml(b.name)}</span>
+              ${isDef ? '<span class="branch-select-badge">★ Cabang Utama</span>' : ''}
+            </div>
+          </div>
+
+          <div class="branch-select-address">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span>${escapeHtml(b.address || 'Alamat cabang')}</span>
+          </div>
+
+          <div class="branch-select-action">
+            <span class="branch-select-phone">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086.159.058 1.011.477 1.184.564.173.086.289.13.332.202.043.072.043.419-.101.824z"/></svg>
+              <span>+${cleanPhone}</span>
+            </span>
+            <span class="branch-select-cta">
+              Hubungi Cabang Ini →
+            </span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Attach click events to each branch card
+    branchSelectorList.querySelectorAll('.branch-select-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const phone = card.getAttribute('data-phone');
+        closeBranchSelector();
+        sendWhatsAppMessage(phone, message);
+      });
+    });
   }
 
   /**
@@ -844,8 +931,48 @@ document.addEventListener('DOMContentLoaded', () => {
       msg += `*Estimasi Total*: ${formatRupiah(totalEst)}\n\n`;
       msg += `Apakah pesanan kue di atas ready stock atau bisa dipesan? Mohon informasinya ya min. Terima kasih! 💕`;
 
-      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
-      window.open(waUrl, '_blank');
+      promptBranchSelection(msg);
+    });
+  }
+
+  // Direct WhatsApp Button in Product Modal
+  if (modalWaBtn) {
+    modalWaBtn.addEventListener('click', (e) => {
+      if (!activeModalProduct) return;
+      if (branches && branches.length > 1) {
+        e.preventDefault();
+        const product = activeModalProduct;
+        const currentProductUrl = `${window.location.origin}${window.location.pathname}?product=${encodeURIComponent(product.id)}`;
+        let message = `${currentProductUrl}\n\n`;
+        message += `Halo Miniecake! ✨🍰\n\n`;
+        message += `Saya tertarik dengan kue:\n`;
+        message += `*${product.name}*\n`;
+        message += `• Kategori: ${product.category || 'Cake'}\n`;
+        message += `• Harga: ${formatRupiah(product.price)}\n\n`;
+        message += `Apakah kue ini ready stock atau bisa dipesan? Mohon informasinya ya. Terima kasih! 💕`;
+        promptBranchSelection(message);
+      }
+    });
+  }
+
+  // Floating & Footer WhatsApp buttons
+  document.querySelectorAll('.social-wa, .footer-social-icon[title="WhatsApp"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      if (branches && branches.length > 1) {
+        e.preventDefault();
+        const generalMsg = "Halo Miniecake! Saya ingin bertanya seputar katalog kue Anda ✨";
+        promptBranchSelection(generalMsg);
+      }
+    });
+  });
+
+  // Branch Selector Modal close handlers
+  if (btnCloseBranchModal) {
+    btnCloseBranchModal.addEventListener('click', closeBranchSelector);
+  }
+  if (branchSelectorModal) {
+    branchSelectorModal.addEventListener('click', (e) => {
+      if (e.target === branchSelectorModal) closeBranchSelector();
     });
   }
 
@@ -857,8 +984,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && productModal && productModal.classList.contains('active')) {
-      closeModal();
+    if (e.key === 'Escape') {
+      if (branchSelectorModal && branchSelectorModal.classList.contains('active')) {
+        closeBranchSelector();
+      } else if (cartDrawerOverlay && cartDrawerOverlay.classList.contains('active')) {
+        closeCartDrawer();
+      } else if (productModal && productModal.classList.contains('active')) {
+        closeModal();
+      }
     }
   });
 

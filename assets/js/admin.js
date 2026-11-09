@@ -8,11 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let products = window.INITIAL_PRODUCTS || [];
   let categories = window.INITIAL_CATEGORIES || [];
   let banners = window.INITIAL_BANNERS || [];
+  let branches = window.INITIAL_BRANCHES || [];
   let settings = window.INITIAL_SETTINGS || {};
 
   let formImages = [];
   let editingProductId = null;
   let editingBannerId = null;
+  let editingBranchId = null;
 
   // Helper for authenticated API fetch (passes Authorization header + credentials)
   async function authFetch(url, options = {}) {
@@ -100,6 +102,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnUploadBannerImg = document.getElementById('btnUploadBannerImg');
   const bannerImgPreviewWrapper = document.getElementById('bannerImgPreviewWrapper');
   const bannerImgPreview = document.getElementById('bannerImgPreview');
+
+  // DOM Elements - Branches
+  const branchForm = document.getElementById('branchForm');
+  const branchFormTitle = document.getElementById('branchFormTitle');
+  const formBranchId = document.getElementById('formBranchId');
+  const branchName = document.getElementById('branchName');
+  const branchPhone = document.getElementById('branchPhone');
+  const branchAddress = document.getElementById('branchAddress');
+  const branchIsDefault = document.getElementById('branchIsDefault');
+  const btnSubmitBranch = document.getElementById('btnSubmitBranch');
+  const btnCancelBranchEdit = document.getElementById('btnCancelBranchEdit');
+  const branchItemsList = document.getElementById('branchItemsList');
 
   // DOM Elements - Settings (Contact & Logo)
   const generalSettingsForm = document.getElementById('generalSettingsForm');
@@ -957,6 +971,163 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
+  // BRANCH / CABANG & WHATSAPP MANAGEMENT
+  // ==========================================
+  function resetBranchForm() {
+    editingBranchId = null;
+    if (branchForm) branchForm.reset();
+    if (formBranchId) formBranchId.value = '';
+    if (branchFormTitle) branchFormTitle.textContent = '+ Tambah Cabang Baru';
+    if (btnSubmitBranch) btnSubmitBranch.innerHTML = '<span>Simpan Cabang</span>';
+    if (btnCancelBranchEdit) btnCancelBranchEdit.style.display = 'none';
+  }
+
+  function renderBranchesList() {
+    if (!branchItemsList) return;
+
+    if (branches.length === 0) {
+      branchItemsList.innerHTML = `
+        <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.9rem;">
+          Belum ada cabang terdaftar. Tambahkan cabang pertama menggunakan form di sebelah kiri.
+        </div>
+      `;
+      return;
+    }
+
+    branchItemsList.innerHTML = branches.map(b => {
+      const isDef = !!b.is_default;
+      let cleanPhone = (b.whatsapp_number || '').replace(/[^0-9]/g, '');
+      if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
+
+      return `
+        <div class="branch-admin-card ${isDef ? 'is-default' : ''}" data-id="${escapeHtml(b.id)}">
+          <div class="branch-card-header">
+            <div class="branch-card-title">
+              <span>${escapeHtml(b.name)}</span>
+              ${isDef ? '<span class="branch-default-badge">★ Cabang Utama</span>' : ''}
+            </div>
+            <div class="action-btns">
+              <button type="button" class="btn-icon btn-edit-branch" data-id="${escapeHtml(b.id)}" title="Edit Cabang">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+              </button>
+              ${branches.length > 1 ? `
+                <button type="button" class="btn-icon delete btn-delete-branch" data-id="${escapeHtml(b.id)}" title="Hapus Cabang">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+
+          <div class="branch-card-info">
+            <div class="branch-info-row">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <span>${escapeHtml(b.address || '-')}</span>
+            </div>
+            <div class="branch-info-row">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              <a href="https://wa.me/${cleanPhone}" target="_blank" rel="noopener noreferrer" class="branch-phone-link">
+                +${cleanPhone} ↗ (Tes Chat)
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Attach Edit Handlers
+    branchItemsList.querySelectorAll('.btn-edit-branch').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const branch = branches.find(b => b.id === id);
+        if (!branch) return;
+
+        editingBranchId = id;
+        formBranchId.value = branch.id;
+        branchName.value = branch.name || '';
+        branchPhone.value = branch.whatsapp_number || '';
+        branchAddress.value = branch.address || '';
+        branchIsDefault.checked = !!branch.is_default;
+
+        branchFormTitle.textContent = '✏️ Edit Cabang: ' + branch.name;
+        btnSubmitBranch.innerHTML = '<span>Simpan Perubahan Cabang</span>';
+        btnCancelBranchEdit.style.display = 'inline-flex';
+
+        branchName.focus();
+        branchForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+
+    // Attach Delete Handlers
+    branchItemsList.querySelectorAll('.btn-delete-branch').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        const branch = branches.find(b => b.id === id);
+        if (!branch) return;
+
+        if (!confirm(`Apakah Anda yakin ingin menghapus "${branch.name}"?`)) return;
+
+        try {
+          const response = await authFetch('../api/settings.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ _action: 'delete_branch', id: id })
+          });
+          const res = await response.json();
+          if (res.success) {
+            branches = res.data;
+            if (editingBranchId === id) resetBranchForm();
+            renderBranchesList();
+            showToast('Cabang berhasil dihapus.');
+          } else {
+            showToast(res.message || 'Gagal menghapus cabang.', 'error');
+          }
+        } catch (err) {
+          showToast('Error: ' + err.message, 'error');
+        }
+      });
+    });
+  }
+
+  // Branch Form Submit
+  if (branchForm) {
+    branchForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        _action: 'save_branch',
+        id: formBranchId.value.trim(),
+        name: branchName.value.trim(),
+        whatsapp_number: branchPhone.value.trim(),
+        address: branchAddress.value.trim(),
+        is_default: branchIsDefault.checked
+      };
+
+      try {
+        const response = await authFetch('../api/settings.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+        if (res.success) {
+          branches = res.data;
+          resetBranchForm();
+          renderBranchesList();
+          showToast('Data cabang berhasil disimpan! 📍');
+        } else {
+          showToast(res.message || 'Gagal menyimpan cabang.', 'error');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    });
+  }
+
+  if (btnCancelBranchEdit) {
+    btnCancelBranchEdit.addEventListener('click', resetBranchForm);
+  }
+
+  // ==========================================
   // LOGO & CONTACT SETTINGS
   // ==========================================
   if (btnUploadLogo && logoFileInput) {
@@ -1114,6 +1285,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCategoryDropdowns();
   renderCategoriesList();
   renderBannersGrid();
+  renderBranchesList();
   renderTable();
   updateStats();
 });
