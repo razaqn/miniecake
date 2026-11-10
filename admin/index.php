@@ -544,7 +544,7 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
           <div class="image-order-notice-box">
             <span class="notice-icon">💡</span>
             <span class="notice-text">
-              <strong>Urutan Foto Produk:</strong> Foto <em>paling kanan</em> adalah foto utama (sampul). Gunakan tombol <strong>◀ / ▶</strong> atau geser (drag &amp; drop) untuk mengatur urutan. Klik pada foto untuk <strong>memotong (crop)</strong>.
+              <strong>Urutan Foto Produk:</strong> Foto <em>paling kiri</em> adalah foto utama (sampul). Gunakan tombol <strong>◀ / ▶</strong> atau geser (drag &amp; drop) untuk mengatur urutan. Klik pada foto untuk <strong>memotong (crop)</strong>.
             </span>
           </div>
 
