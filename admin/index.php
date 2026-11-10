@@ -54,6 +54,7 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
   <title>Admin Dashboard — Miniecake</title>
   <link rel="icon" type="image/svg+xml" href="<?= e($logoUrl) ?>">
   <link rel="stylesheet" href="../assets/css/admin.css">
+  <link rel="stylesheet" href="../assets/vendor/cropper/cropper.min.css">
 </head>
 <body>
 
@@ -526,7 +527,7 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
           <label class="form-label">Foto Produk (Google Drive / URL)</label>
           
           <div class="uploader-box" id="dropArea">
-            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #ec4899; margin: 0 auto 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
             <div style="font-weight: 600; font-size: 0.85rem; color: #1f2937;">Klik untuk upload foto kue</div>
             <div style="font-size: 0.75rem; color: #6b7280; margin-top: 2px;">
@@ -540,6 +541,13 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
           </div>
 
           <!-- Preview of images attached to this product -->
+          <div class="image-order-notice-box">
+            <span class="notice-icon">💡</span>
+            <span class="notice-text">
+              <strong>Urutan Foto Produk:</strong> Foto <em>paling kanan</em> adalah foto utama (sampul). Gunakan tombol <strong>◀ / ▶</strong> atau geser (drag &amp; drop) untuk mengatur urutan. Klik pada foto untuk <strong>memotong (crop)</strong>.
+            </span>
+          </div>
+
           <div class="preview-images-grid" id="previewImagesContainer">
             <!-- Populated dynamically -->
           </div>
@@ -667,6 +675,43 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
     </div>
   </div>
 
+  <!-- ==========================================
+       MODAL: CROP FOTO PRODUK
+       ========================================== -->
+  <div class="admin-modal-overlay" id="cropperModal" style="z-index: 99999;">
+    <div class="admin-modal-card cropper-modal-card">
+      <div class="admin-modal-header">
+        <h3>✂️ Crop &amp; Sesuaikan Foto Produk</h3>
+        <button type="button" class="btn-icon" id="btnCloseCropperModal" style="border: none;">&times;</button>
+      </div>
+      <div class="admin-modal-body cropper-modal-body">
+        <div class="cropper-stage">
+          <img id="cropperImageElement" src="" alt="Foto Crop" crossorigin="anonymous">
+        </div>
+        <div class="cropper-controls-panel">
+          <div class="cropper-ratio-group">
+            <span class="cropper-control-label">Rasio Aspek:</span>
+            <div class="cropper-ratio-btns">
+              <button type="button" class="btn-crop-ratio active" data-ratio="1">1:1 (Persegi)</button>
+              <button type="button" class="btn-crop-ratio" data-ratio="1.333333">4:3</button>
+              <button type="button" class="btn-crop-ratio" data-ratio="0.75">3:4</button>
+              <button type="button" class="btn-crop-ratio" data-ratio="NaN">Bebas</button>
+            </div>
+          </div>
+          <div class="cropper-action-tools">
+            <button type="button" class="btn-outline-soft" id="btnCropperRotateLeft" title="Putar 90° Kiri">↺ Putar Kiri</button>
+            <button type="button" class="btn-outline-soft" id="btnCropperRotateRight" title="Putar 90° Kanan">↻ Putar Kanan</button>
+            <button type="button" class="btn-outline-soft" id="btnCropperReset" title="Reset Posisi">⟲ Reset</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-outline-soft" id="btnCancelCropper">Batal</button>
+        <button type="button" class="btn-primary" id="btnApplyCropper">✂️ Terapkan &amp; Simpan Potongan</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="admin-toast" id="adminToast">
     <span id="toastMessage">Pesan</span>
@@ -682,6 +727,7 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
     window.ADMIN_TOKEN = <?= json_encode(Auth::getToken()) ?>;
     window.BASE_URL = <?= json_encode(base_url()) ?>;
   </script>
+  <script src="../assets/vendor/cropper/cropper.min.js"></script>
   <script src="../assets/js/admin.js"></script>
 </body>
 </html>

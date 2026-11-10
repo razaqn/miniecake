@@ -78,6 +78,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnAddUrlBtn = document.getElementById('btnAddUrlBtn');
   const previewImagesContainer = document.getElementById('previewImagesContainer');
 
+  // Cropper DOM Elements
+  const cropperModal = document.getElementById('cropperModal');
+  const btnCloseCropperModal = document.getElementById('btnCloseCropperModal');
+  const btnCancelCropper = document.getElementById('btnCancelCropper');
+  const btnApplyCropper = document.getElementById('btnApplyCropper');
+  const cropperImageElement = document.getElementById('cropperImageElement');
+  const btnCropperRotateLeft = document.getElementById('btnCropperRotateLeft');
+  const btnCropperRotateRight = document.getElementById('btnCropperRotateRight');
+  const btnCropperReset = document.getElementById('btnCropperReset');
+  const ratioButtons = document.querySelectorAll('.btn-crop-ratio');
+
+  let cropper = null;
+  let activeCroppingIndex = null;
+  let draggedImageIndex = null;
+
   // DOM Elements - Categories
   const categoryItemsList = document.getElementById('categoryItemsList');
   const addCategoryForm = document.getElementById('addCategoryForm');
@@ -343,15 +358,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function moveImageLeft(index) {
+    if (index <= 0 || index >= formImages.length) return;
+    const temp = formImages[index];
+    formImages[index] = formImages[index - 1];
+    formImages[index - 1] = temp;
+    renderFormImages();
+  }
+
+  function moveImageRight(index) {
+    if (index < 0 || index >= formImages.length - 1) return;
+    const temp = formImages[index];
+    formImages[index] = formImages[index + 1];
+    formImages[index + 1] = temp;
+    renderFormImages();
+  }
+
   function renderFormImages() {
     if (!previewImagesContainer) return;
-    previewImagesContainer.innerHTML = formImages.map((url, idx) => `
-      <div class="preview-img-item" data-index="${idx}">
-        <img src="${escapeHtml(formatImageUrl(url))}" alt="Preview ${idx+1}" referrerpolicy="no-referrer">
-        <span class="remove-img-btn" data-action="remove-img" data-index="${idx}" title="Hapus Foto">&times;</span>
-      </div>
-    `).join('');
 
+    if (formImages.length === 0) {
+      previewImagesContainer.innerHTML = '';
+      return;
+    }
+
+    const lastIdx = formImages.length - 1;
+
+    previewImagesContainer.innerHTML = formImages.map((url, idx) => {
+      const isFront = (idx === lastIdx);
+      return `
+        <div class="preview-img-item ${isFront ? 'is-front' : ''}" data-index="${idx}" draggable="true" title="Klik foto untuk memotong (crop)">
+          ${isFront 
+            ? `<span class="badge-cover-front">⭐ Terdepan (Sampul)</span>` 
+            : `<span class="badge-img-order">#${idx + 1}</span>`
+          }
+          <span class="remove-img-btn" data-action="remove-img" data-index="${idx}" title="Hapus Foto">&times;</span>
+          <img src="${escapeHtml(formatImageUrl(url))}" alt="Preview ${idx+1}" referrerpolicy="no-referrer">
+          <span class="crop-hint-badge">✂️ Klik untuk Crop</span>
+          <div class="img-shift-bar" onclick="event.stopPropagation()">
+            <button type="button" class="btn-shift-img" data-action="shift-left" data-index="${idx}" ${idx === 0 ? 'disabled' : ''} title="Geser ke Kiri">◀</button>
+            <button type="button" class="btn-shift-img" data-action="shift-right" data-index="${idx}" ${idx === lastIdx ? 'disabled' : ''} title="Geser ke Kanan (Lebih Depan)">▶</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Remove buttons
     previewImagesContainer.querySelectorAll('[data-action="remove-img"]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -359,6 +411,205 @@ document.addEventListener('DOMContentLoaded', () => {
         formImages.splice(index, 1);
         renderFormImages();
       });
+    });
+
+    // Shift left buttons
+    previewImagesContainer.querySelectorAll('[data-action="shift-left"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const index = parseInt(btn.getAttribute('data-index'), 10);
+        moveImageLeft(index);
+      });
+    });
+
+    // Shift right buttons
+    previewImagesContainer.querySelectorAll('[data-action="shift-right"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const index = parseInt(btn.getAttribute('data-index'), 10);
+        moveImageRight(index);
+      });
+    });
+
+    // Click item to Crop & Drag & Drop
+    previewImagesContainer.querySelectorAll('.preview-img-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.remove-img-btn') || e.target.closest('.img-shift-bar')) return;
+        const index = parseInt(item.getAttribute('data-index'), 10);
+        openCropper(index);
+      });
+
+      item.addEventListener('dragstart', (e) => {
+        draggedImageIndex = parseInt(item.getAttribute('data-index'), 10);
+        e.dataTransfer.effectAllowed = 'move';
+        item.style.opacity = '0.4';
+      });
+
+      item.addEventListener('dragend', () => {
+        item.style.opacity = '1';
+        draggedImageIndex = null;
+      });
+
+      item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      });
+
+      item.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const targetIndex = parseInt(item.getAttribute('data-index'), 10);
+        if (draggedImageIndex !== null && draggedImageIndex !== targetIndex) {
+          const moved = formImages.splice(draggedImageIndex, 1)[0];
+          formImages.splice(targetIndex, 0, moved);
+          renderFormImages();
+        }
+      });
+    });
+  }
+
+  // ==========================================
+  // IMAGE CROPPER LOGIC
+  // ==========================================
+  function openCropper(index) {
+    if (index < 0 || index >= formImages.length) return;
+    activeCroppingIndex = index;
+    const imgUrl = formImages[index];
+
+    const cleanUrl = formatImageUrl(imgUrl);
+    cropperImageElement.src = cleanUrl;
+
+    if (cropperModal) cropperModal.classList.add('active');
+
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+
+    const initCropper = () => {
+      if (typeof Cropper !== 'undefined') {
+        cropper = new Cropper(cropperImageElement, {
+          aspectRatio: 1, // 1:1 default
+          viewMode: 1,
+          autoCropArea: 0.9,
+          responsive: true,
+          restore: false,
+          checkCrossOrigin: false,
+        });
+      }
+    };
+
+    if (cropperImageElement.complete) {
+      initCropper();
+    } else {
+      cropperImageElement.onload = () => {
+        initCropper();
+        cropperImageElement.onload = null;
+      };
+    }
+  }
+
+  function closeCropper() {
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+    activeCroppingIndex = null;
+    if (cropperModal) cropperModal.classList.remove('active');
+  }
+
+  if (btnCloseCropperModal) btnCloseCropperModal.addEventListener('click', closeCropper);
+  if (btnCancelCropper) btnCancelCropper.addEventListener('click', closeCropper);
+  if (cropperModal) {
+    cropperModal.addEventListener('click', (e) => {
+      if (e.target === cropperModal) closeCropper();
+    });
+  }
+
+  ratioButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      ratioButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const ratio = parseFloat(btn.getAttribute('data-ratio'));
+      if (cropper) {
+        cropper.setAspectRatio(isNaN(ratio) ? NaN : ratio);
+      }
+    });
+  });
+
+  if (btnCropperRotateLeft) {
+    btnCropperRotateLeft.addEventListener('click', () => {
+      if (cropper) cropper.rotate(-90);
+    });
+  }
+
+  if (btnCropperRotateRight) {
+    btnCropperRotateRight.addEventListener('click', () => {
+      if (cropper) cropper.rotate(90);
+    });
+  }
+
+  if (btnCropperReset) {
+    btnCropperReset.addEventListener('click', () => {
+      if (cropper) cropper.reset();
+    });
+  }
+
+  if (btnApplyCropper) {
+    btnApplyCropper.addEventListener('click', async () => {
+      if (!cropper || activeCroppingIndex === null) return;
+
+      btnApplyCropper.disabled = true;
+      btnApplyCropper.textContent = 'Memproses...';
+
+      try {
+        const canvas = cropper.getCroppedCanvas({
+          maxWidth: 1600,
+          maxHeight: 1600,
+          fillColor: '#fff',
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+        });
+
+        if (!canvas) {
+          throw new Error('Gagal merender kanvas potongan gambar.');
+        }
+
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            btnApplyCropper.disabled = false;
+            btnApplyCropper.textContent = '✂️ Terapkan & Simpan Potongan';
+            showToast('Gagal memproses potongan foto.', 'error');
+            return;
+          }
+
+          const file = new File([blob], `cropped_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          const formData = new FormData();
+          formData.append('image', file);
+          showToast('Mengunggah hasil crop...', 'success');
+
+          try {
+            const response = await authFetch('../api/upload.php', { method: 'POST', body: formData });
+            const res = await response.json();
+            if (res.success && res.data?.url) {
+              formImages[activeCroppingIndex] = res.data.url;
+              renderFormImages();
+              closeCropper();
+              showToast('Foto berhasil dipotong (crop) dan diperbarui! ✨', 'success');
+            } else {
+              showToast(res.message || 'Gagal menyimpan hasil crop.', 'error');
+            }
+          } catch (err) {
+            showToast('Kesalahan upload crop: ' + err.message, 'error');
+          } finally {
+            btnApplyCropper.disabled = false;
+            btnApplyCropper.textContent = '✂️ Terapkan & Simpan Potongan';
+          }
+        }, 'image/jpeg', 0.92);
+      } catch (err) {
+        btnApplyCropper.disabled = false;
+        btnApplyCropper.textContent = '✂️ Terapkan & Simpan Potongan';
+        showToast('Gagal memproses crop: ' + err.message, 'error');
+      }
     });
   }
 
@@ -404,7 +655,8 @@ document.addEventListener('DOMContentLoaded', () => {
     formVideoUrl.value = product.video || '';
     updateVideoPreview(product.video || '');
 
-    formImages = Array.isArray(product.images) ? [...product.images] : [];
+    // Reverse images so rightmost is the front cover in admin
+    formImages = Array.isArray(product.images) ? [...product.images].reverse() : [];
     renderFormImages();
 
     productFormModal.classList.add('active');
@@ -432,8 +684,8 @@ document.addEventListener('DOMContentLoaded', () => {
     formVideoUrl.value = product.video || '';
     updateVideoPreview(product.video || '');
 
-    // Copy images so admin can just replace them
-    formImages = Array.isArray(product.images) ? [...product.images] : [];
+    // Copy images reversed for admin display
+    formImages = Array.isArray(product.images) ? [...product.images].reverse() : [];
     renderFormImages();
 
     productFormModal.classList.add('active');
@@ -455,28 +707,31 @@ document.addEventListener('DOMContentLoaded', () => {
     dropArea.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', async () => {
-      const file = fileInput.files[0];
-      if (!file) return;
+      const files = fileInput.files;
+      if (!files || files.length === 0) return;
 
-      const formData = new FormData();
-      formData.append('image', file);
-      showToast('Mengunggah foto...', 'success');
+      showToast(`Mengunggah ${files.length} foto...`, 'success');
 
-      try {
-        const response = await authFetch('../api/upload.php', { method: 'POST', body: formData });
-        const res = await response.json();
-        if (res.success && res.data?.url) {
-          formImages.push(res.data.url);
-          renderFormImages();
-          showToast(res.message || 'Foto berhasil diunggah!', 'success');
-        } else {
-          showToast(res.message || 'Gagal mengunggah foto.', 'error');
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append('image', files[i]);
+
+        try {
+          const response = await authFetch('../api/upload.php', { method: 'POST', body: formData });
+          const res = await response.json();
+          if (res.success && res.data?.url) {
+            formImages.push(res.data.url);
+            renderFormImages();
+          } else {
+            showToast(res.message || 'Gagal mengunggah salah satu foto.', 'error');
+          }
+        } catch (err) {
+          showToast('Kesalahan upload: ' + err.message, 'error');
         }
-      } catch (err) {
-        showToast('Kesalahan upload: ' + err.message, 'error');
-      } finally {
-        fileInput.value = '';
       }
+
+      fileInput.value = '';
+      showToast('Foto berhasil ditambahkan!', 'success');
     });
   }
 
@@ -549,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
         short_desc: formShortDesc.value.trim(),
         full_desc: formFullDesc.value.trim(),
         video: formVideoUrl.value.trim(),
-        images: formImages.length > 0 ? formImages : [
+        images: formImages.length > 0 ? [...formImages].reverse() : [
           'https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=800&q=80'
         ]
       };

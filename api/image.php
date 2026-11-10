@@ -8,6 +8,15 @@ require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../includes/GoogleClient.php';
 
 // Extract file ID from query parameter: ?id=XYZ or ?url=...
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
 $fileId = trim($_GET['id'] ?? '');
 
 if (empty($fileId) && !empty($_GET['url'])) {
