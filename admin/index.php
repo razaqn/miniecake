@@ -649,18 +649,23 @@ if (!str_starts_with($logoUrl, 'http') && !str_starts_with($logoUrl, '../')) {
 
         <h4 style="color: #ec4899; margin-top: 14px; margin-bottom: 6px;">2. Mendapatkan OAuth2 Token (Client ID, Secret, &amp; Refresh Token)</h4>
         <ol style="padding-left: 20px;">
-          <li>Buka <a href="https://console.cloud.google.com/" target="_blank" style="color: #ec4899; text-decoration: underline;">Google Cloud Console</a>, buat project baru.</li>
+          <li>Buka <a href="https://console.cloud.google.com/" target="_blank" style="color: #ec4899; text-decoration: underline;">Google Cloud Console</a>, pastikan project Anda aktif.</li>
           <li>Aktifkan <strong>Google Sheets API</strong> dan <strong>Google Drive API</strong> di menu <em>APIs &amp; Services &gt; Library</em>.</li>
+          <li>Di menu <em>APIs &amp; Services &gt; OAuth consent screen</em>:
+            <div style="background: #fff8e1; border-left: 3px solid #f59e0b; padding: 6px 10px; margin: 4px 0; border-radius: 4px; font-size: 0.82rem; color: #92400e;">
+              ⚠️ <strong>PENTING:</strong> Klik tombol <strong>"PUBLISH APP"</strong> (Ubah Publishing Status dari <em>Testing</em> menjadi <em>In production</em>). Jika masih <em>Testing</em>, Google otomatis mencabut/membatalkan token tiap 7 hari!
+            </div>
+          </li>
           <li>Masuk ke <em>Credentials &gt; Create Credentials &gt; OAuth client ID</em> (tipe Web application).</li>
           <li>Tambahkan Redirect URI: <code>https://developers.google.com/oauthplayground</code></li>
-          <li>Salin <strong>Client ID</strong> &amp; <strong>Client Secret</strong> ke <code>GOOGLE_CLIENT_ID</code> dan <code>GOOGLE_CLIENT_SECRET</code> di <code>.env</code>.</li>
+          <li>Salin <strong>Client ID</strong> &amp; <strong>Client Secret</strong> ke <code>GOOGLE_CLIENT_ID</code> dan <code>GOOGLE_CLIENT_SECRET</code> di <code>.env</code> atau Vercel.</li>
           <li>Buka <a href="https://developers.google.com/oauthplayground" target="_blank" style="color: #ec4899; text-decoration: underline;">Google OAuth2 Playground</a>:
             <ul>
               <li>Klik ikon roda gigi (Settings) di pojok kanan atas, centang <em>"Use your own OAuth credentials"</em>, isi Client ID &amp; Secret Anda.</li>
               <li>Pilih scope: <code>https://www.googleapis.com/auth/spreadsheets</code> dan <code>https://www.googleapis.com/auth/drive</code>.</li>
               <li>Klik <em>Authorize APIs</em>, login akun Google Anda.</li>
               <li>Klik <em>Exchange authorization code for tokens</em>.</li>
-              <li>Salin <strong>Refresh Token</strong> ke <code>GOOGLE_REFRESH_TOKEN</code> di file <code>.env</code>.</li>
+              <li>Salin <strong>Refresh Token</strong> ke <code>GOOGLE_REFRESH_TOKEN</code> di Vercel / <code>.env</code>.</li>
             </ul>
           </li>
         </ol>

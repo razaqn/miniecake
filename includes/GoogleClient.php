@@ -19,6 +19,7 @@ class GoogleClient {
     private $driveFolderId;
     private $tokenCacheFile;
     private $sheetIds = [];
+    private $lastOAuthError = null;
 
     public function __construct() {
         $this->clientId = env('GOOGLE_CLIENT_ID');
@@ -88,16 +89,24 @@ class GoogleClient {
             if ($newToken) {
                 return $newToken;
             }
+            if ($this->lastOAuthError) {
+                throw new Exception($this->lastOAuthError);
+            }
         }
 
-        // 4. Fallback to direct access token if provided
-        return !empty($this->directAccessToken) ? $this->directAccessToken : null;
+        // 4. Fallback to direct access token if provided and no refresh token defined
+        if (!empty($this->directAccessToken) && empty($this->refreshToken)) {
+            return $this->directAccessToken;
+        }
+
+        throw new Exception("Google Access Token tidak tersedia. Silakan lengkapi GOOGLE_REFRESH_TOKEN di .env / Vercel.");
     }
 
     /**
      * Refresh OAuth2 access token
      */
     private function refreshOAuthToken() {
+        $this->lastOAuthError = null;
         $url = 'https://oauth2.googleapis.com/token';
         $postData = [
             'client_id' => $this->clientId,
@@ -114,7 +123,14 @@ class GoogleClient {
         curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
         curl_close($ch);
+
+        if ($curlError) {
+            $this->lastOAuthError = "Gagal menghubungi server Google OAuth: {$curlError}";
+            error_log($this->lastOAuthError);
+            return null;
+        }
 
         if ($httpCode === 200 && $response) {
             $data = json_decode($response, true);
@@ -133,6 +149,22 @@ class GoogleClient {
                     @file_put_contents($this->tokenCacheFile, json_encode($cacheData));
                 }
                 return $data['access_token'];
+            }
+        }
+
+        if ($response) {
+            $data = json_decode($response, true);
+            if (!empty($data['error'])) {
+                $err = $data['error'];
+                $errDesc = $data['error_description'] ?? '';
+                if ($err === 'invalid_grant') {
+                    $this->lastOAuthError = "GOOGLE_REFRESH_TOKEN telah kedaluwarsa atau dicabut ('invalid_grant: {$errDesc}'). Google otomatis membatalkan token tiap 7 hari jika status OAuth Consent Screen masih 'Testing'. Silakan buat Refresh Token baru di OAuth Playground dan ubah status Publishing ke 'In Production'.";
+                } elseif ($err === 'invalid_client') {
+                    $this->lastOAuthError = "GOOGLE_CLIENT_ID atau GOOGLE_CLIENT_SECRET tidak valid ('invalid_client: {$errDesc}').";
+                } else {
+                    $this->lastOAuthError = "Google OAuth error: {$err} ({$errDesc})";
+                }
+                error_log($this->lastOAuthError);
             }
         }
 
